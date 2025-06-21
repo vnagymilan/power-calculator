@@ -30,4 +30,4 @@ total_sd = np.sqrt(bio_sd**2 + scanner_sd**2)
 # Sample size formula
 if delta > 0:
     n = (2 * (total_sd ** 2) * (z_alpha + z_beta) ** 2) / (delta ** 2)
-    st.success(f"📊 Required sample size per group: **{int(np.ceil**
+    st.success(f"📊 Required sample size per group: **{int(np.ceil(n))}**")
