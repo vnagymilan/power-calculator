@@ -78,10 +78,9 @@ n = 2 * ((z_alpha + z_beta) * total_sd / delta) ** 2
 n_rounded = int(np.ceil(n))
 
 st.markdown("---")
-st.markdown(f"""
-## 📊 Required sample size per group  
-**{n_rounded} patients**
-""")
+st.markdown(f"<div style='text-align: center; font-size: 24px;'>Required sample size per group</div>", unsafe_allow_html=True)
+st.markdown(f"<div style='text-align: center; font-size: 48px; font-weight: bold;'>{n_rounded} patients</div>", unsafe_allow_html=True)
+
 
 st.markdown("---")
 st.markdown(f"""
