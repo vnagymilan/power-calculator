@@ -15,7 +15,11 @@ col1, col2 = st.columns([1, 4])
 with col1:
     st.image(logo, width=100)
 with col2:
-    st.markdown("<h1 style='padding-top: 15px;'>PCD-CT vs. EID-CT Power Calculator</h1>", unsafe_allow_html=True)
+    st.markdown("""
+        <div style='padding-top: 15px; font-size: 26px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'>
+            PCD-CT vs. EID-CT Sample Size Calculator
+        </div>
+    """, unsafe_allow_html=True)
 
 # Introduction
 st.markdown("""
