@@ -2,49 +2,106 @@ import streamlit as st
 import numpy as np
 from scipy.stats import norm
 
-# Data from Excel
-standard_dict = {
-    "Stenosis severity (%)": {"biological_sd": 11.6, "interscanner_sd": 2.4, "total_sd": 11.85},
-    "CT-FFR": {"biological_sd": 0.08, "interscanner_sd": 0.09, "total_sd": 0.12},
-}
-
-uhr_dict = {
-    "Stenosis severity (%)": {"biological_sd": 11.6, "interscanner_sd": 10.2, "total_sd": 15.47},
-    "CT-FFR": {"biological_sd": 0.08, "interscanner_sd": 0.11, "total_sd": 0.14},
-    "Segment stenosis score": {"biological_sd": 5.93, "interscanner_sd": 3.18, "total_sd": 6.73},
-    "Minimal lumen area (mm²)": {"biological_sd": 1.89, "interscanner_sd": 1.32, "total_sd": 2.30},
-    "Minimal lumen diameter (mm)": {"biological_sd": 0.25, "interscanner_sd": 0.18, "total_sd": 0.31},
-    "Plaque burden (%)": {"biological_sd": 10.87, "interscanner_sd": 6.97, "total_sd": 12.97},
-    "Low-density NCP volume (mm³)": {"biological_sd": 22.94, "interscanner_sd": 13.58, "total_sd": 26.68},
-    "Total plaque volume (mm³)": {"biological_sd": 45.58, "interscanner_sd": 19.75, "total_sd": 49.81},
-    "Max plaque attenuation (HU)": {"biological_sd": 38.47, "interscanner_sd": 18.55, "total_sd": 42.65},
-    "Calcium blooming (mm)": {"biological_sd": 0.17, "interscanner_sd": 0.13, "total_sd": 0.21},
-    "Lumen area (mm²)": {"biological_sd": 1.85, "interscanner_sd": 1.00, "total_sd": 2.10},
-}
-
-# UI Layout
 st.set_page_config(page_title="PCD-CT vs. EID-CT Power Calculator", layout="centered")
-st.title("Sample Size Calculator for PCD-CT vs. EID-CT")
-st.markdown("""
-This calculator estimates the required **sample size per group** to detect an expected difference (Δ) between imaging biomarkers acquired on different CT technologies.  
-**All values must be entered as absolute values** (e.g., a Δ of 1.5 is invalid for CT-FFR).  
 
-Select a resolution and biomarker to load standard deviation values from published and in-review intra-individual studies.
+st.title("Sample Size Calculator for PCD-CT vs. EID-CT")
+
+st.markdown("""
+This calculator estimates the **sample size per group** needed to detect an absolute difference (Δ) in imaging biomarkers between CT systems.  
+Please enter **absolute values** (e.g., entering 1.5 for CT-FFR is invalid).  
+You can manually adjust SD values based on your use case.
 """)
 
-# Resolution Selection
-resolution = st.selectbox("CT resolution", ["Standard resolution (0.4 mm)", "Ultrahigh-resolution (0.2 mm)"])
+# Mapping of biomarker -> {resolution -> {SDs + reference}}
+biomarker_data = {
+    "Stenosis severity (%)": {
+        "Standard": {
+            "bio_sd": 11.6, "inter_sd": 2.4,
+            "ref": "Wolf EV et al. Imaging. 2023:1–8."
+        },
+        "UHR": {
+            "bio_sd": 11.6, "inter_sd": 10.2,
+            "ref": "Vecsey-Nagy M et al. Circ Cardiovasc Imaging. 2024:1–9."
+        }
+    },
+    "CT-FFR": {
+        "Standard": {
+            "bio_sd": 0.08, "inter_sd": 0.09,
+            "ref": "Zsarnoczay E et al. Int J Cardiol. 2024;399:131684."
+        },
+        "UHR": {
+            "bio_sd": 0.08, "inter_sd": 0.11,
+            "ref": "Vecsey-Nagy M et al. Eur J Radiol. 2024;181:111797."
+        }
+    },
+    "Segment stenosis score": {
+        "UHR": {
+            "bio_sd": 5.93, "inter_sd": 3.18,
+            "ref": "Tremamunno G et al. J Cardiovasc Comput Tomogr. 2025."
+        }
+    },
+    "Segment involvement score": {
+        "UHR": {
+            "bio_sd": 3.87, "inter_sd": 2.63,
+            "ref": "Tremamunno G et al. J Cardiovasc Comput Tomogr. 2025."
+        }
+    },
+    "EAT volume (cl)": {
+        "UHR": {
+            "bio_sd": 13.15, "inter_sd": 5.65,
+            "ref": "Kravchenko D et al. Eur J Radiol. 2024;181:111728."
+        }
+    },
+    "EAT attenuation (HU)": {
+        "UHR": {
+            "bio_sd": 7.27, "inter_sd": 2.61,
+            "ref": "Kravchenko D et al. Eur J Radiol. 2024;181:111728."
+        }
+    },
+    "PCAT attenuation (HU)": {
+        "UHR": {
+            "bio_sd": 6.80, "inter_sd": 3.28,
+            "ref": "Tremamunno G et al. Acad Radiol. 2025;32:1333–43."
+        }
+    },
+    "Total plaque volume (mm³)": {
+        "UHR": {
+            "bio_sd": 45.58, "inter_sd": 19.75,
+            "ref": "Vecsey-Nagy M et al. Radiology. 2025;314:e241479."
+        }
+    },
+    "Calcified plaque volume (mm³)": {
+        "UHR": {
+            "bio_sd": 16.36, "inter_sd": 11.83,
+            "ref": "Vecsey-Nagy M et al. Radiology. 2025;314:e241479."
+        }
+    },
+    "Fibrotic plaque volume (mm³)": {
+        "UHR": {
+            "bio_sd": 30.53, "inter_sd": 16.35,
+            "ref": "Vecsey-Nagy M et al. Radiology. 2025;314:e241479."
+        }
+    },
+    "Low-attenuation plaque volume (mm³)": {
+        "UHR": {
+            "bio_sd": 22.94, "inter_sd": 13.58,
+            "ref": "Vecsey-Nagy M et al. Radiology. 2025;314:e241479."
+        }
+    },
+}
 
-# Biomarker selection
-if resolution.startswith("Standard"):
-    biomarker = st.selectbox("Select biomarker", list(standard_dict.keys()))
-    data = standard_dict[biomarker]
-else:
-    biomarker = st.selectbox("Select biomarker", list(uhr_dict.keys()))
-    data = uhr_dict[biomarker]
+# Resolution selection
+resolution = st.selectbox("Select CT resolution", ["Standard (0.4 mm)", "Ultrahigh-resolution (0.2 mm)"])
+res_key = "Standard" if resolution.startswith("Standard") else "UHR"
 
-# Input fields
+# Biomarker options based on resolution
+valid_biomarkers = [k for k, v in biomarker_data.items() if res_key in v]
+biomarker = st.selectbox("Select biomarker", valid_biomarkers)
+bdata = biomarker_data[biomarker][res_key]
+
+# Input section for parameters
 st.subheader("Study parameters")
+
 col1, col2, col3 = st.columns(3)
 with col1:
     alpha = st.number_input("Alpha (type I error)", min_value=0.001, max_value=0.5, value=0.05, step=0.01)
@@ -53,28 +110,33 @@ with col2:
 with col3:
     delta = st.number_input("Expected difference (Δ)", min_value=0.001, value=1.0, step=0.1)
 
-# Sample size calculation
+# User-modifiable SDs
+st.subheader("Standard deviations (modifiable)")
+bio_sd = st.number_input("Biological SD", value=bdata["bio_sd"], format="%.4f")
+inter_sd = st.number_input("Inter-scanner SD*", value=bdata["inter_sd"], format="%.4f")
+total_sd = np.sqrt(bio_sd**2 + inter_sd**2)
+
+# Compute required sample size
 z_alpha = norm.ppf(1 - alpha / 2)
 z_beta = norm.ppf(power)
-total_sd = data["total_sd"]
 n = 2 * ((z_alpha + z_beta) * total_sd / delta) ** 2
 n_rounded = int(np.ceil(n))
 
 # Output
-st.subheader("Required sample size per group")
-st.write(f"**{n_rounded} patients per group** are required to detect a difference of Δ = {delta} with {int(power*100)}% power and α = {alpha}.")
-
-# Display SDs
 st.markdown("---")
+st.subheader("Required sample size per group")
+st.write(f"**{n_rounded} patients per group** are required to detect a Δ of {delta} with {int(power*100)}% power and α = {alpha}.")
+
+# Display SD summary
 st.markdown(f"""
-**Biological SD:** {data['biological_sd']}  
-**Inter-scanner SD**<sup>*</sup>: {data['interscanner_sd']}  
-**Total SD:** {total_sd:.3f}  
+**Biological SD:** {bio_sd}  
+**Inter-scanner SD**<sup>*</sup>: {inter_sd}  
+**Total SD:** {total_sd:.3f}
 """, unsafe_allow_html=True)
 
-# Footnotes and contact
+# Footnote + contact
 st.markdown("---")
-st.markdown("""
-<sup>*</sup>Inter-scanner SD values were derived from intra-individual comparisons between matched PCD-CT and EID-CT reconstructions.  
-For questions or suggestions, contact **[musccvi@musc.edu](mailto:musccvi@musc.edu)**.
+st.markdown(f"""
+<sup>*</sup>Intra-individual comparison reference: {bdata["ref"]}  
+Questions or suggestions? Contact **[musccvi@musc.edu](mailto:musccvi@musc.edu)**
 """, unsafe_allow_html=True)
