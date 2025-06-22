@@ -5,7 +5,7 @@ from scipy.stats import norm
 st.set_page_config(page_title="CT Power Calculator", layout="centered")
 
 st.title("📊 CT Power Calculator")
-st.markdown("Estimate sample size per group based on imaging biomarker variability between detector types.")
+st.markdown("Estimate the required sample size per group based on imaging biomarker variability between CT detector types.")
 
 # ----------------------------
 # Data dictionary
@@ -51,7 +51,7 @@ BIOMARKERS = {
             "delta": 0.224,
             "citation": "Tremamunno G., Varga-Szemes A., Schoepf UJ., et al. *J Cardiovasc Comput Tomogr*. 2025."
         },
-        "EAT volume (cm³)": {
+        "EAT Volume (cL)": {
             "bio_sd": 25.3,
             "scanner_sd": 18.4,
             "delta": 2.53,
@@ -63,7 +63,7 @@ BIOMARKERS = {
             "delta": 0.83,
             "citation": "Kravchenko D., Vecsey-Nagy M., Tremamunno G., et al. *Eur J Radiol*. 2024;181:111728."
         },
-        "PCATmean (HU)": {
+        "PCAT attenuation (HU)": {
             "bio_sd": 8.3,
             "scanner_sd": 7.3,
             "delta": 0.83,
@@ -73,6 +73,18 @@ BIOMARKERS = {
             "bio_sd": 27.2,
             "scanner_sd": 27.5,
             "delta": 2.72,
+            "citation": "Vecsey-Nagy M., Tremamunno G., Schoepf UJ., et al. *Radiology*. 2025;314:e241479."
+        },
+        "Fibrotic plaque (mm³)": {
+            "bio_sd": 123.6,
+            "scanner_sd": 98.2,
+            "delta": 12.36,
+            "citation": "Vecsey-Nagy M., Tremamunno G., Schoepf UJ., et al. *Radiology*. 2025;314:e241479."
+        },
+        "Calcified plaque (mm³)": {
+            "bio_sd": 38.1,
+            "scanner_sd": 25.4,
+            "delta": 3.81,
             "citation": "Vecsey-Nagy M., Tremamunno G., Schoepf UJ., et al. *Radiology*. 2025;314:e241479."
         },
         "Total plaque volume (mm³)": {
@@ -85,24 +97,30 @@ BIOMARKERS = {
 }
 
 # ----------------------------
-# UI Components
+# UI: Dropdowns & Inputs
 # ----------------------------
 
 resolution = st.selectbox("Select scanner resolution", options=BIOMARKERS.keys())
-
 biomarker = st.selectbox("Select biomarker", options=BIOMARKERS[resolution].keys())
 
-# Get default values
 defaults = BIOMARKERS[resolution][biomarker]
-bio_sd = st.number_input("Biological SD", value=defaults["bio_sd"], min_value=0.0, format="%.4f")
-scanner_sd = st.number_input("Inter-scanner SD", value=defaults["scanner_sd"], min_value=0.0, format="%.4f")
-delta = st.number_input("Expected Difference (Δ), absolute units", value=defaults["delta"], min_value=0.0, format="%.4f")
 
-alpha = st.number_input("Alpha (Type I error rate)", value=0.05, min_value=0.0001, max_value=0.2, step=0.01, format="%.4f")
-power = st.number_input("Power (1 - Type II error rate)", value=0.80, min_value=0.01, max_value=0.99, step=0.01, format="%.2f")
+col1, col2 = st.columns(2)
+with col1:
+    bio_sd = st.number_input("Biological SD", value=defaults["bio_sd"], min_value=0.0, format="%.4f")
+with col2:
+    scanner_sd = st.number_input("Inter-scanner SD", value=defaults["scanner_sd"], min_value=0.0, format="%.4f")
+
+delta = st.number_input("Expected difference (Δ, absolute units)", value=defaults["delta"], min_value=0.0, format="%.4f")
+
+col3, col4 = st.columns(2)
+with col3:
+    alpha = st.number_input("Alpha (Type I error)", value=0.05, min_value=0.0001, max_value=0.2, step=0.01, format="%.4f")
+with col4:
+    power = st.number_input("Power (1 - Type II error)", value=0.80, min_value=0.01, max_value=0.99, step=0.01, format="%.2f")
 
 # ----------------------------
-# Calculations
+# Calculation
 # ----------------------------
 
 total_sd = np.sqrt(bio_sd**2 + scanner_sd**2)
@@ -116,7 +134,7 @@ else:
     st.warning("Expected difference (Δ) must be greater than 0.")
 
 # ----------------------------
-# Output footnote
+# Citation
 # ----------------------------
 
 st.markdown("---")
