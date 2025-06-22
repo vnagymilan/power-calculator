@@ -2,140 +2,75 @@ import streamlit as st
 import numpy as np
 from scipy.stats import norm
 
-st.set_page_config(page_title="CT Power Calculator", layout="centered")
+st.set_page_config(page_title="PCD-CT vs. EID-CT Power Calculator", layout="centered")
 
-st.title("📊 CT Power Calculator")
-st.markdown("Estimate the required sample size per group based on imaging biomarker variability between CT detector types.")
+st.title("Sample Size Calculator for PCD-CT vs. EID-CT")
+st.markdown("""
+This tool estimates the required sample size per group to detect differences in imaging biomarkers across CT technologies.  
+**Please enter absolute values** (e.g., a Δ of 1.5 is invalid for CT-FFR).  
 
-# ----------------------------
-# Data dictionary
-# ----------------------------
+Select the appropriate scanner resolution and biomarker to auto-populate standard deviations from prior studies.  
+""")
 
-BIOMARKERS = {
-    "Standard resolution": {
-        "Stenosis severity (%)": {
-            "bio_sd": 11.6,
-            "scanner_sd": 2.4,
-            "delta": 1.16,
-            "citation": "Wolf E V., Gnasso C., Schoepf UJ., et al. *Imaging*. 2023:1–8."
-        },
-        "CT-FFR": {
-            "bio_sd": 0.08,
-            "scanner_sd": 0.09,
-            "delta": 0.008,
-            "citation": "Zsarnoczay E., Pinos D., Schoepf UJ., et al. *Int J Cardiol*. 2024;399:131684."
-        }
-    },
-    "Ultrahigh-resolution": {
-        "Stenosis severity (%)": {
-            "bio_sd": 11.6,
-            "scanner_sd": 10.2,
-            "delta": 1.16,
-            "citation": "Vecsey-Nagy M., Tremamunno G., Schoepf UJ., et al. *Circ Cardiovasc Imaging*. 2024:1–9."
-        },
-        "CT-FFR": {
-            "bio_sd": 0.08,
-            "scanner_sd": 0.11,
-            "delta": 0.008,
-            "citation": "Vecsey-Nagy M., Tremamunno G., Schoepf UJ., et al. *Eur J Radiol*. 2024;181:111797."
-        },
-        "Segment stenosis score": {
-            "bio_sd": 5.93,
-            "scanner_sd": 3.18,
-            "delta": 0.593,
-            "citation": "Tremamunno G., Varga-Szemes A., Schoepf UJ., et al. *J Cardiovasc Comput Tomogr*. 2025."
-        },
-        "Segment involvement score": {
-            "bio_sd": 2.24,
-            "scanner_sd": 1.63,
-            "delta": 0.224,
-            "citation": "Tremamunno G., Varga-Szemes A., Schoepf UJ., et al. *J Cardiovasc Comput Tomogr*. 2025."
-        },
-        "EAT Volume (cL)": {
-            "bio_sd": 25.3,
-            "scanner_sd": 18.4,
-            "delta": 2.53,
-            "citation": "Kravchenko D., Vecsey-Nagy M., Tremamunno G., et al. *Eur J Radiol*. 2024;181:111728."
-        },
-        "EAT attenuation (HU)": {
-            "bio_sd": 8.3,
-            "scanner_sd": 7.3,
-            "delta": 0.83,
-            "citation": "Kravchenko D., Vecsey-Nagy M., Tremamunno G., et al. *Eur J Radiol*. 2024;181:111728."
-        },
-        "PCAT attenuation (HU)": {
-            "bio_sd": 8.3,
-            "scanner_sd": 7.3,
-            "delta": 0.83,
-            "citation": "Tremamunno G., Vecsey-Nagy M., Hagar MT., et al. *Acad Radiol*. 2025;32:1333–43."
-        },
-        "Low-attenuation plaque (mm³)": {
-            "bio_sd": 27.2,
-            "scanner_sd": 27.5,
-            "delta": 2.72,
-            "citation": "Vecsey-Nagy M., Tremamunno G., Schoepf UJ., et al. *Radiology*. 2025;314:e241479."
-        },
-        "Fibrotic plaque (mm³)": {
-            "bio_sd": 123.6,
-            "scanner_sd": 98.2,
-            "delta": 12.36,
-            "citation": "Vecsey-Nagy M., Tremamunno G., Schoepf UJ., et al. *Radiology*. 2025;314:e241479."
-        },
-        "Calcified plaque (mm³)": {
-            "bio_sd": 38.1,
-            "scanner_sd": 25.4,
-            "delta": 3.81,
-            "citation": "Vecsey-Nagy M., Tremamunno G., Schoepf UJ., et al. *Radiology*. 2025;314:e241479."
-        },
-        "Total plaque volume (mm³)": {
-            "bio_sd": 144.4,
-            "scanner_sd": 101.8,
-            "delta": 14.44,
-            "citation": "Vecsey-Nagy M., Tremamunno G., Schoepf UJ., et al. *Radiology*. 2025;314:e241479."
-        }
-    }
+# ---------- Dropdown for Resolution ----------
+resolution = st.selectbox("Select resolution", [
+    "Standard resolution (0.4 mm)",
+    "Ultrahigh-resolution (0.2 mm)"
+])
+
+# ---------- Biomarkers per Resolution ----------
+biomarkers_04 = {
+    "Stenosis severity (QCA-correlated, %)": ("3.7", "2.3", "Szilveszter et al, JACC CVI 2024"),
+    "Non-calcified plaque volume (mm³)": ("20.1", "15.2", "Vecsey-Nagy et al, Radiology 2024"),
+    "CT-FFR (value)": ("0.048", "0.034", "Szilveszter et al, EHJ CVI 2023")
 }
 
-# ----------------------------
-# UI: Dropdowns & Inputs
-# ----------------------------
+biomarkers_02 = {
+    "Plaque max attenuation (HU)": ("25.2", "11.4", "Vecsey-Nagy et al, Under Review"),
+    "Calcium blooming (mm)": ("0.16", "0.10", "Vecsey-Nagy et al, EHJ CVI 2024"),
+    "Lumen area (mm²)": ("1.85", "1.00", "Szilveszter et al, SCCT 2024")
+}
 
-resolution = st.selectbox("Select scanner resolution", options=BIOMARKERS.keys())
-biomarker = st.selectbox("Select biomarker", options=BIOMARKERS[resolution].keys())
+# ---------- Show Biomarker Dropdown Based on Resolution ----------
+if resolution.startswith("Standard"):
+    selected_biomarker = st.selectbox("Select biomarker", list(biomarkers_04.keys()))
+    bio_sd, inter_sd, citation = biomarkers_04[selected_biomarker]
+else:
+    selected_biomarker = st.selectbox("Select biomarker", list(biomarkers_02.keys()))
+    bio_sd, inter_sd, citation = biomarkers_02[selected_biomarker]
 
-defaults = BIOMARKERS[resolution][biomarker]
+# ---------- Convert SDs ----------
+bio_sd = float(bio_sd)
+inter_sd = float(inter_sd)
+total_sd = np.sqrt(bio_sd**2 + inter_sd**2)
 
-col1, col2 = st.columns(2)
+# ---------- Input Parameters ----------
+st.subheader("Study parameters")
+
+col1, col2, col3 = st.columns(3)
 with col1:
-    bio_sd = st.number_input("Biological SD", value=defaults["bio_sd"], min_value=0.0, format="%.4f")
+    alpha = st.number_input("Alpha (type I error)", value=0.05, step=0.01, format="%.2f")
 with col2:
-    scanner_sd = st.number_input("Inter-scanner SD", value=defaults["scanner_sd"], min_value=0.0, format="%.4f")
-
-delta = st.number_input("Expected difference (Δ, absolute units)", value=defaults["delta"], min_value=0.0, format="%.4f")
-
-col3, col4 = st.columns(2)
+    power = st.number_input("Power (1 - β)", value=0.8, step=0.05, format="%.2f")
 with col3:
-    alpha = st.number_input("Alpha (Type I error)", value=0.05, min_value=0.0001, max_value=0.2, step=0.01, format="%.4f")
-with col4:
-    power = st.number_input("Power (1 - Type II error)", value=0.80, min_value=0.01, max_value=0.99, step=0.01, format="%.2f")
+    delta = st.number_input("Expected difference (Δ)", value=1.0, step=0.1)
 
-# ----------------------------
-# Calculation
-# ----------------------------
-
-total_sd = np.sqrt(bio_sd**2 + scanner_sd**2)
+# ---------- Compute Sample Size ----------
 z_alpha = norm.ppf(1 - alpha / 2)
 z_beta = norm.ppf(power)
+n = 2 * ((z_alpha + z_beta) * total_sd / delta) ** 2
+n_rounded = int(np.ceil(n))
 
-if delta > 0:
-    n = (2 * (total_sd ** 2) * (z_alpha + z_beta) ** 2) / (delta ** 2)
-    st.markdown(f"### 📈 Required sample size per group: **{int(np.ceil(n))}**")
-else:
-    st.warning("Expected difference (Δ) must be greater than 0.")
+# ---------- Output ----------
+st.subheader("Required sample size per group")
+st.write(f"**{n_rounded} patients per group** are required.")
 
-# ----------------------------
-# Citation
-# ----------------------------
-
+# ---------- Display SDs and Footnote ----------
 st.markdown("---")
-st.caption(f"**Reference for inter-scanner SD:** {defaults['citation']}")
+st.markdown(f"""
+**Biological SD:** {bio_sd}  
+**Inter-scanner SD:** {inter_sd}  
+**Total SD:** {total_sd:.3f}  
+
+<sub>SD values derived from: {citation}</sub>
+""", unsafe_allow_html=True)
