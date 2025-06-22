@@ -1,11 +1,23 @@
 import streamlit as st
 import numpy as np
 from scipy.stats import norm
+from PIL import Image
 
+# Page setup
 st.set_page_config(page_title="PCD-CT vs. EID-CT Power Calculator", layout="centered")
 
-st.title("Sample Size Calculator for PCD-CT vs. EID-CT")
+# Load MUSC logo
+logo_path = "Image 22.6.2025 at 10.58.jpeg"  # make sure this file is in the same directory or adjust path
+logo = Image.open(logo_path)
 
+# Title and logo
+col1, col2 = st.columns([1, 4])
+with col1:
+    st.image(logo, width=100)
+with col2:
+    st.markdown("<h1 style='padding-top: 15px;'>PCD-CT vs. EID-CT Power Calculator</h1>", unsafe_allow_html=True)
+
+# Introduction
 st.markdown("""
 This calculator estimates the **sample size per group** needed to detect a difference (Δ) in imaging biomarkers between CT systems.  
 Please enter **absolute values** (e.g., entering 1.5 for CT-FFR is invalid).  
@@ -29,7 +41,7 @@ long_refs = {
     ("Low-attenuation plaque volume (mm³)", "UHR"): "Vecsey-Nagy M., Tremamunno G., Schoepf UJ., et al. Coronary Plaque Quantification with Ultrahigh-Spatial-Resolution Photon-counting Detector CT: Intraindividual Comparison with Energy-integrating Detector CT. Radiology. 2025;314:e241479."
 }
 
-# Main data structure
+# SD data
 biomarker_data = {
     "Stenosis severity (%)": {
         "Standard": {"bio_sd": 11.6, "inter_sd": 2.4},
@@ -50,7 +62,7 @@ biomarker_data = {
     "Low-attenuation plaque volume (mm³)": {"UHR": {"bio_sd": 22.94, "inter_sd": 13.58}}
 }
 
-# UI
+# Inputs
 resolution = st.selectbox("Select PCD-CT resolution", ["Standard (0.4 mm)", "Ultrahigh-resolution (0.2 mm)"])
 res_key = "Standard" if resolution.startswith("Standard") else "UHR"
 
@@ -72,16 +84,18 @@ inter_sd = st.number_input("Inter-scanner SD*", value=bdata["inter_sd"], format=
 total_sd = np.sqrt(bio_sd**2 + inter_sd**2)
 st.markdown(f"**Total SD:** {total_sd:.3f}")
 
+# Sample size
 z_alpha = norm.ppf(1 - alpha / 2)
 z_beta = norm.ppf(power)
 n = 2 * ((z_alpha + z_beta) * total_sd / delta) ** 2
 n_rounded = int(np.ceil(n))
 
+# Output
 st.markdown("---")
 st.markdown(f"<div style='text-align: center; font-size: 24px;'>Required sample size per group</div>", unsafe_allow_html=True)
 st.markdown(f"<div style='text-align: center; font-size: 48px; font-weight: bold;'>{n_rounded} patients</div>", unsafe_allow_html=True)
 
-
+# Footnote and contact
 st.markdown("---")
 st.markdown(f"""
 <sup>*</sup>{ref}  
