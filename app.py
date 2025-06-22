@@ -26,6 +26,9 @@ st.markdown("""
 This calculator estimates the **sample size per group** needed to detect a difference (Δ) in imaging biomarkers between CT systems.  
 Please enter **absolute values** (e.g., entering 1.5 for CT-FFR is invalid).  
 You can manually adjust standard deviation values below.
+
+- **Biological SD** represents variation across different patients.  
+- **Inter-scanner SD** reflects intra-individual variation when the same patient is scanned on both PCD-CT and EID-CT.
 """)
 
 # Long-format references
