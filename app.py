@@ -163,6 +163,7 @@ fig.add_trace(go.Scatter(
     customdata=np.expand_dims(sample_sizes_trimmed, axis=1),
     line=dict(width=3)
 ))
+
 fig.update_traces(hoveron='points+fills')
 
 fig.update_layout(
