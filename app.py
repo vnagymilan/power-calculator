@@ -59,14 +59,14 @@ biomarker_data = {
         "UHR": {"bio_sd": 0.08, "inter_sd": 0.11}
     },
     "Segment stenosis score": {"UHR": {"bio_sd": 5.93, "inter_sd": 3.18}},
-    "Segment involvement score": {"UHR": {"bio_sd": 3.87, "inter_sd": 2.63}},
-    "EAT volume (cl)": {"UHR": {"bio_sd": 13.15, "inter_sd": 5.65}},
-    "EAT attenuation (HU)": {"UHR": {"bio_sd": 7.27, "inter_sd": 2.61}},
-    "PCAT attenuation (HU)": {"UHR": {"bio_sd": 6.80, "inter_sd": 3.28}},
-    "Total plaque volume (mm³)": {"UHR": {"bio_sd": 45.58, "inter_sd": 19.75}},
-    "Calcified plaque volume (mm³)": {"UHR": {"bio_sd": 16.36, "inter_sd": 11.83}},
-    "Fibrotic plaque volume (mm³)": {"UHR": {"bio_sd": 30.53, "inter_sd": 16.35}},
-    "Low-attenuation plaque volume (mm³)": {"UHR": {"bio_sd": 22.94, "inter_sd": 13.58}}
+    "Segment involvement score": {"UHR": {"bio_sd": 4.44, "inter_sd": 1.47}},
+    "EAT volume (cl)": {"UHR": {"bio_sd": 5.67, "inter_sd": 2.27}},
+    "EAT attenuation (HU)": {"UHR": {"bio_sd": 5.20, "inter_sd": 6.53}},
+    "PCAT attenuation (HU)": {"UHR": {"bio_sd": 8.00, "inter_sd": 7.37}},
+    "Total plaque volume (mm³)": {"UHR": {"bio_sd": 515.00, "inter_sd": 239.54}},
+    "Calcified plaque volume (mm³)": {"UHR": {"bio_sd": 148.60, "inter_sd": 142.02}},
+    "Fibrotic plaque volume (mm³)": {"UHR": {"bio_sd": 380.10, "inter_sd": 206.60}},
+    "Low-attenuation plaque volume (mm³)": {"UHR": {"bio_sd": 11.90, "inter_sd": 84.59}}
 }
 
 # Inputs
