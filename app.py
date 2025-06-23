@@ -115,37 +115,10 @@ with col3:
         "Δ (Expected difference)",
         min_value=delta_min,
         max_value=delta_max,
-        value=
-
-# ✅ Now we handle Δ input range outside of the `with` block
-# Define Δ input limits based on biomarker type
-if biomarker == "CT-FFR":
-    delta_min, delta_max = 0.001, 1.0
-elif biomarker == "Segment involvement score":
-    delta_min, delta_max = 1, 16
-elif biomarker == "Segment stenosis score":
-    delta_min, delta_max = 1, 48
-else:
-    delta_min, delta_max = 0.001, None
-
-# Define Δ input limits based on biomarker type
-if biomarker == "CT-FFR":
-    delta_min, delta_max = 0.001, 1.0
-elif biomarker == "Segment involvement score":
-    delta_min, delta_max = 1.0, 16.0
-elif biomarker == "Segment stenosis score":
-    delta_min, delta_max = 1.0, 48.0
-else:
-    delta_min, delta_max = 0.001, None  # unbounded upper limit
-
-with col3:
-    delta = st.number_input(
-        "Δ (Expected difference)",
-        min_value=delta_min,
-        max_value=delta_max,
         value=delta_min,
         step=0.1
     )
+
 
 
 bio_sd = st.number_input("Biological SD", value=bdata["bio_sd"], format="%.4f")
