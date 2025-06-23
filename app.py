@@ -135,54 +135,35 @@ st.markdown(f"<div style='text-align: center; font-size: 48px; font-weight: bold
 import matplotlib.pyplot as plt
 
 # Optional sample size curve
-import plotly.graph_objects as go  # Put this at the top of your file with your other imports
+import plotly.graph_objects as go
 
-if st.button("Show sample size curve"):
-    # Generate Δ values
-    delta_range = np.linspace(delta_min, delta_max, 100)
+# Calculate absolute sample sizes
+sample_sizes = 2 * ((z_alpha + z_beta) * total_sd / delta_range) ** 2
+sample_sizes = np.clip(sample_sizes, 1, None)  # Floor at 1
 
-    # Sample size formula
-    z_alpha = norm.ppf(1 - alpha / 2)
-    z_beta = norm.ppf(power)
-    raw_sample_sizes = 2 * ((z_alpha + z_beta) * total_sd / delta_range) ** 2
+# Create interactive plot
+fig = go.Figure()
 
-    # Only include values where sample size > 1
-    valid_indices = np.where(raw_sample_sizes > 1)[0]
-    if len(valid_indices) == 0:
-        st.warning("All expected differences result in sample size ≤ 1. No curve to display.")
-    else:
-        last_valid_index = valid_indices[-1] + 1
-        delta_plot = delta_range[:last_valid_index]
-        sample_plot = raw_sample_sizes[:last_valid_index]
+fig.add_trace(go.Scatter(
+    x=delta_range,
+    y=sample_sizes,
+    mode='lines',
+    hovertemplate='Δ: %{x:.2f}<br>Sample size: %{y:.0f}<extra></extra>',
+    line=dict(width=3),
+    showlegend=False
+))
 
-        # Create interactive Plotly figure
-        fig = go.Figure()
+fig.update_layout(
+    xaxis_title="Expected difference (Δ)",
+    yaxis_title="Sample size",
+    template="simple_white",
+    hovermode="x unified",
+    xaxis=dict(showgrid=False),
+    yaxis=dict(showgrid=True, gridcolor='LightGray', zeroline=False),
+    margin=dict(l=40, r=40, t=40, b=40)
+)
 
-        fig.add_trace(go.Scatter(
-            x=delta_plot,
-            y=np.log10(sample_plot),
-            mode='lines',
-            line=dict(width=3),
-            name="Sample Size",
-            hovertemplate="Δ: %{x:.2f}<br>Sample size: %{y:.0f}<extra></extra>"
-        ))
-
-
-        fig.update_layout(
-            xaxis_title="Expected difference (Δ)",
-            yaxis_title="log₁₀(sample size)",
-            title=f"Sample Size Curve for {biomarker}",
-            showlegend=False,
-            template="simple_white",
-            yaxis=dict(showgrid=True, gridcolor='LightGray', zeroline=False),
-            xaxis=dict(showgrid=False),
-            margin=dict(l=40, r=40, t=40, b=40)
-                ,
-            hovermode="x unified"
-
-        )
-
-        st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, use_container_width=True)
 
 # Reference and contact
 st.markdown("---")
