@@ -158,7 +158,10 @@ fig.add_trace(go.Scatter(
     x=delta_range_trimmed,
     y=log_sample_sizes_trimmed,
     mode='lines',
-    hovertemplate='Sample size: %{customdata:.0f}<extra></extra>',
+    name='',
+    hovertemplate=
+        'Δ: %{x:.2f}<br>' +
+        'Sample size: %{customdata:.0f}<extra></extra>',
     customdata=np.expand_dims(sample_sizes_trimmed, axis=1),
     line=dict(width=3)
 ))
