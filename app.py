@@ -158,10 +158,11 @@ fig.add_trace(go.Scatter(
     x=delta_range_trimmed,
     y=log_sample_sizes_trimmed,
     mode='lines',
-    name='',
-    hovertemplate='Sample size: %{customdata:.0f}<extra></extra>',
+    hoverinfo='skip',  # Skip default hover
+    hovertemplate='<b>Δ:</b> %{x:.2f}<br><b>Sample size:</b> %{customdata:.0f}<extra></extra>',
     customdata=np.expand_dims(sample_sizes_trimmed, axis=1),
-    line=dict(width=3)
+    line=dict(width=3),
+    showlegend=False
 ))
 
 fig.update_traces(hoveron='points+fills')
