@@ -137,33 +137,40 @@ import matplotlib.pyplot as plt
 # Optional sample size curve
 import plotly.graph_objects as go
 
-# Calculate absolute sample sizes
+# Compute sample size (real values, not log-transformed)
 sample_sizes = 2 * ((z_alpha + z_beta) * total_sd / delta_range) ** 2
 sample_sizes = np.clip(sample_sizes, 1, None)  # Floor at 1
+log_sample_sizes = np.log10(sample_sizes)
 
-# Create interactive plot
+# Build interactive plot
 fig = go.Figure()
 
 fig.add_trace(go.Scatter(
     x=delta_range,
-    y=sample_sizes,
+    y=log_sample_sizes,
     mode='lines',
-    hovertemplate='Δ: %{x:.2f}<br>Sample size: %{y:.0f}<extra></extra>',
-    line=dict(width=3),
-    showlegend=False
+    name='log₁₀(sample size)',
+    hovertemplate=
+        'Δ: %{x:.2f}<br>' +
+        'Sample size: %{customdata:.0f}<extra></extra>',
+    customdata=np.expand_dims(sample_sizes, axis=1),
+    line=dict(width=3)
 ))
 
 fig.update_layout(
     xaxis_title="Expected difference (Δ)",
-    yaxis_title="Sample size",
-    template="simple_white",
+    yaxis_title="log₁₀(sample size)",
     hovermode="x unified",
-    xaxis=dict(showgrid=False),
-    yaxis=dict(showgrid=True, gridcolor='LightGray', zeroline=False),
-    margin=dict(l=40, r=40, t=40, b=40)
+    showlegend=False,
+    plot_bgcolor="white",
+    margin=dict(l=40, r=40, t=20, b=40),
 )
 
+fig.update_xaxes(showgrid=False)
+fig.update_yaxes(showgrid=True, zeroline=False)
+
 st.plotly_chart(fig, use_container_width=True)
+
 
 # Reference and contact
 st.markdown("---")
