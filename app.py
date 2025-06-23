@@ -7,7 +7,7 @@ from PIL import Image
 st.set_page_config(page_title="PCD-CT vs. EID-CT Power Calculator", layout="centered")
 
 # Load MUSC logo
-logo_path = "Image 22.6.2025 at 10.58.jpeg"  # make sure this file is in the same directory or adjust path
+logo_path = "musc_logo.jpeg"  # make sure this file is in the same directory or adjust path
 logo = Image.open(logo_path)
 
 # Title and logo
