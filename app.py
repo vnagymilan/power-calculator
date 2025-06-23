@@ -137,47 +137,36 @@ import matplotlib.pyplot as plt
 # Optional sample size curve
 if st.button("Show sample size curve"):
     # Generate Δ values
-    delta_range = np.linspace(delta_min, delta_max, 500)
+    delta_range = np.linspace(delta_min, delta_max, 100)
 
     # Sample size formula
     z_alpha = norm.ppf(1 - alpha / 2)
     z_beta = norm.ppf(power)
     raw_sample_sizes = 2 * ((z_alpha + z_beta) * total_sd / delta_range) ** 2
 
-    # Create sample size array, but detect where we hit n = 1
-    plateau_start = np.argmax(raw_sample_sizes <= 1)
+    # Clip minimum sample size to 1 (can't have <1 participant)
+    sample_sizes = np.clip(raw_sample_sizes, 1, None)
 
-    # Split into real curve and plateau region
-    delta_real = delta_range[:plateau_start]
-    sample_real = raw_sample_sizes[:plateau_start]
-
-    delta_plateau = delta_range[plateau_start:]
-    sample_plateau = np.ones_like(delta_plateau)
-
-    # Combine both regions
-    delta_all = np.concatenate((delta_real, delta_plateau))
-    log_sample_all = np.concatenate((np.log10(sample_real), np.zeros_like(sample_plateau)))
+    # Log-transform for plotting
+    log_sample_sizes = np.log10(sample_sizes)
 
     # Plotting
     fig, ax = plt.subplots()
-    ax.plot(delta_all, log_sample_all, linewidth=2)
+    ax.plot(delta_range, log_sample_sizes, linewidth=2)
     ax.set_xlabel("Expected difference (Δ)")
     ax.set_ylabel("log₁₀(sample size)")
     ax.set_title(f"Sample Size Curve for {biomarker}")
-    ax.set_ylim(bottom=0.0)
-    ax.grid(True)
 
-        # Force y-axis range for visual clarity
+    # Force a meaningful y-axis even if sample sizes are all ~1
     y_min = 0.0
-    y_max = max(log_sample_sizes)
-
-    # Enforce a minimum visual range so the curve is not flattened
+    y_max = log_sample_sizes.max()
     if y_max - y_min < 0.5:
         y_max = y_min + 0.5
-
     ax.set_ylim(y_min, y_max)
 
+    ax.grid(True)
     st.pyplot(fig)
+
 
 
 
