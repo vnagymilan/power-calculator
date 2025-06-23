@@ -161,7 +161,7 @@ fig.add_trace(go.Scatter(
     hovertemplate='<b>Sample size:</b> %{customdata:.0f}<extra></extra>',
     customdata=np.expand_dims(sample_sizes_trimmed, axis=1),
     line=dict(width=3, color='blue'),
-    hoverinfo='skip',  # ← this suppresses the hover marker/line
+    hoverinfo='skip',
     showlegend=False
 ))
 
