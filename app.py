@@ -144,10 +144,9 @@ if st.button("Show sample size curve"):
     z_beta = norm.ppf(power)
     sample_sizes = 2 * ((z_alpha + z_beta) * total_sd / delta_range) ** 2
 
-    # Prevent invalid log10 values and preserve plateau
+    # Clamp and preserve plateau
     sample_sizes = np.clip(sample_sizes, 1, None)
-    log_sample_sizes = np.log10(sample_sizes)
-    log_sample_sizes = np.where(sample_sizes == 1, 0.0, log_sample_sizes)  # Keep plateau at log10(1) = 0
+    log_sample_sizes = np.where(sample_sizes <= 1.5, 0.0, np.log10(sample_sizes))
 
     # Plotting
     fig, ax = plt.subplots()
