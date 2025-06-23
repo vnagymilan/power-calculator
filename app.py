@@ -84,7 +84,24 @@ with col1:
 with col2:
     power = st.number_input("Power", min_value=0.01, max_value=0.99, value=0.8, step=0.05)
 with col3:
-    delta = st.number_input("Δ (Expected difference)", min_value=0.001, value=1.0, step=0.1)
+# Define Δ input limits per biomarker
+if biomarker == "CT-FFR":
+    delta_min, delta_max = 0.001, 1.0
+elif biomarker == "Segment involvement score":
+    delta_min, delta_max = 1, 16
+elif biomarker == "Segment stenosis score":
+    delta_min, delta_max = 1, 48
+else:
+    delta_min, delta_max = 0.001, None  # Default: unbounded upper limit
+
+# Render delta input field
+delta = st.number_input(
+    "Δ (Expected difference)",
+    min_value=delta_min,
+    max_value=delta_max,
+    value=delta_min,
+    step=0.1
+)
 
 bio_sd = st.number_input("Biological SD", value=bdata["bio_sd"], format="%.4f")
 inter_sd = st.number_input("Inter-scanner SD*", value=bdata["inter_sd"], format="%.4f")
