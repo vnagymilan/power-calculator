@@ -167,6 +167,16 @@ if st.button("Show sample size curve"):
     ax.set_ylim(bottom=0.0)
     ax.grid(True)
 
+        # Force y-axis range for visual clarity
+    y_min = 0.0
+    y_max = max(log_sample_sizes)
+
+    # Enforce a minimum visual range so the curve is not flattened
+    if y_max - y_min < 0.5:
+        y_max = y_min + 0.5
+
+    ax.set_ylim(y_min, y_max)
+
     st.pyplot(fig)
 
 
