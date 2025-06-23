@@ -137,20 +137,19 @@ import matplotlib.pyplot as plt
 # Optional sample size curve
 if st.button("Show sample size curve"):
     # Generate Δ values
-    delta_range = np.linspace(delta_min, delta_max, 100)
+    delta_range = np.linspace(delta_min, delta_max, 500)
 
     # Sample size formula
     z_alpha = norm.ppf(1 - alpha / 2)
     z_beta = norm.ppf(power)
     sample_sizes = 2 * ((z_alpha + z_beta) * total_sd / delta_range) ** 2
 
-    # Clamp and preserve plateau
-    sample_sizes = np.clip(sample_sizes, 1, None)
-    log_sample_sizes = np.where(sample_sizes <= 1.5, 0.0, np.log10(sample_sizes))
+    # Force minimum sample size of 1
+    sample_sizes = np.maximum(sample_sizes, 1)
 
     # Plotting
     fig, ax = plt.subplots()
-    ax.plot(delta_range, log_sample_sizes, linewidth=2)
+    ax.plot(delta_range, np.log10(sample_sizes), linewidth=2)
     ax.set_xlabel("Expected difference (Δ)")
     ax.set_ylabel("log₁₀(sample size)")
     ax.set_title(f"Sample Size Curve for {biomarker}")
@@ -158,7 +157,6 @@ if st.button("Show sample size curve"):
     ax.grid(True)
 
     st.pyplot(fig)
-
 
 # Reference and contact
 st.markdown("---")
