@@ -159,15 +159,16 @@ fig.add_trace(go.Scatter(
     y=log_sample_sizes_trimmed,
     mode='lines',
     line=dict(width=3, color='blue'),
-    hovertemplate='<b>Sample size:</b> %{text}<extra></extra>',
-    text=[f"{int(np.round(val))}" for val in sample_sizes_trimmed],
+    name='',  # Empty name disables trace name
+    hovertemplate='Sample size: %{customdata:.0f}<extra></extra>',
+    customdata=sample_sizes_trimmed.reshape(-1, 1),
     showlegend=False
 ))
 
 fig.update_layout(
     xaxis_title="Expected difference (Δ)",
     yaxis_title="log₁₀(sample size)",
-    hovermode="x",
+    hovermode="x unified",  # Enables vertical line
     hoverlabel=dict(bgcolor="white", bordercolor="black", font_size=13),
     plot_bgcolor="white",
     margin=dict(l=40, r=40, t=20, b=40),
