@@ -163,8 +163,8 @@ if st.button("Show sample size curve"):
             y=np.log10(sample_plot),
             mode='lines',
             line=dict(width=3),
-            hovertemplate='%{x:.2f}<extra></extra>',
-            name=''
+            name="Sample Size",
+            hovertemplate="Δ: %{x:.2f}<br>Sample size: %{y:.0f}<extra></extra>"
         ))
 
 
@@ -177,6 +177,9 @@ if st.button("Show sample size curve"):
             yaxis=dict(showgrid=True, gridcolor='LightGray', zeroline=False),
             xaxis=dict(showgrid=False),
             margin=dict(l=40, r=40, t=40, b=40)
+                ,
+            hovermode="x unified"
+
         )
 
         st.plotly_chart(fig, use_container_width=True)
