@@ -84,6 +84,39 @@ with col1:
 with col2:
     power = st.number_input("Power", min_value=0.01, max_value=0.99, value=0.8, step=0.05)
 
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    alpha = st.number_input("Alpha", min_value=0.001, max_value=0.5, value=0.05, step=0.01)
+
+with col2:
+    power = st.number_input("Power", min_value=0.01, max_value=0.99, value=0.8, step=0.05)
+
+# Δ range dictionary
+delta_limits = {
+    "Stenosis severity (%)": (1.0, 100.0),
+    "CT-FFR": (0.001, 1.0),
+    "Segment stenosis score": (1.0, 48.0),
+    "Segment involvement score": (1.0, 16.0),
+    "EAT volume (cl)": (1.0, 100.0),
+    "EAT attenuation (HU)": (1.0, 30.0),
+    "PCAT attenuation (HU)": (1.0, 30.0),
+    "Total plaque volume (mm³)": (1.0, 10000.0),
+    "Calcified plaque volume (mm³)": (1.0, 10000.0),
+    "Fibrotic plaque volume (mm³)": (1.0, 10000.0),
+    "Low-attenuation plaque volume (mm³)": (1.0, 10000.0)
+}
+
+# Use delta range dynamically
+delta_min, delta_max = delta_limits.get(biomarker, (0.001, 100.0))
+
+with col3:
+    delta = st.number_input(
+        "Δ (Expected difference)",
+        min_value=delta_min,
+        max_value=delta_max,
+        value=
+
 # ✅ Now we handle Δ input range outside of the `with` block
 # Define Δ input limits based on biomarker type
 if biomarker == "CT-FFR":
