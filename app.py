@@ -166,7 +166,8 @@ fig.add_trace(go.Scatter(
 fig.update_layout(
     xaxis_title="Expected difference (Δ)",
     yaxis_title="log₁₀(sample size)",
-    hovermode="x unified",
+    hovermode="x",
+    hoverlabel=dict(bgcolor="white", bordercolor="black", font_size=13),
     showlegend=False,
     plot_bgcolor="white",
     margin=dict(l=40, r=40, t=20, b=40),
