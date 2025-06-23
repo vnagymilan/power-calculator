@@ -168,11 +168,15 @@ if st.button("Show sample size curve"):
         ))
 
         fig.update_layout(
-            title=f"Sample Size Curve for {biomarker}",
-            xaxis_title="Expected difference (Δ)",
-            yaxis_title="Sample size",
-            hovermode="x",  # enables interactive vertical guide line
-            template="simple_white",  # clean look, no grid
+    xaxis_title="Expected difference (Δ)",
+    yaxis_title="log₁₀(sample size)",
+    title=f"Sample Size Curve for {biomarker}",
+    showlegend=False,
+    template="simple_white",
+    yaxis=dict(showgrid=True, gridcolor='LightGray', zeroline=False),
+    xaxis=dict(showgrid=False)
+)
+
             margin=dict(l=40, r=40, t=40, b=40)
         )
 
