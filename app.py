@@ -158,13 +158,11 @@ fig.add_trace(go.Scatter(
     x=delta_range_trimmed,
     y=log_sample_sizes_trimmed,
     mode='lines',
-    hovertemplate='<b>Δ:</b> %{x:.2f}<br><b>Sample size:</b> %{customdata:.0f}<extra></extra>',
+    hovertemplate='<b>Sample size:</b> %{customdata:.0f}<extra></extra>',
     customdata=np.expand_dims(sample_sizes_trimmed, axis=1),
-    line=dict(width=3),
+    line=dict(width=3, color='blue'),
     showlegend=False
 ))
-
-fig.update_traces(hoveron='points+fills')
 
 fig.update_layout(
     xaxis_title="Expected difference (Δ)",
