@@ -160,12 +160,13 @@ if st.button("Show sample size curve"):
 
         fig.add_trace(go.Scatter(
             x=delta_plot,
-            y=sample_plot,
+            y=np.log10(sample_plot),
             mode='lines',
             line=dict(width=3),
-            hovertemplate='Δ: %{x:.2f}<br>Sample size: %{y:.0f}<extra></extra>',
-            name='Sample Size'
+            hovertemplate='%{x:.2f}<extra></extra>',
+            name=''
         ))
+
 
         fig.update_layout(
             xaxis_title="Expected difference (Δ)",
