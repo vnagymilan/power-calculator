@@ -144,31 +144,33 @@ if st.button("Show sample size curve"):
     z_beta = norm.ppf(power)
     raw_sample_sizes = 2 * ((z_alpha + z_beta) * total_sd / delta_range) ** 2
 
-    # Clip minimum sample size to 1 (can't have <1 participant)
-    sample_sizes = np.clip(raw_sample_sizes, 1, None)
+    # Find the first index where sample size reaches or drops below 1
+    valid_indices = np.where(raw_sample_sizes > 1)[0]
 
-    # Log-transform for plotting
-    log_sample_sizes = np.log10(sample_sizes)
+    if len(valid_indices) == 0:
+        st.warning("All expected differences result in sample size ≤ 1. No curve to display.")
+    else:
+        last_valid_index = valid_indices[-1] + 1  # include one more for visual edge
+        delta_plot = delta_range[:last_valid_index]
+        sample_plot = raw_sample_sizes[:last_valid_index]
+        log_sample_plot = np.log10(sample_plot)
 
-    # Plotting
-    fig, ax = plt.subplots()
-    ax.plot(delta_range, log_sample_sizes, linewidth=2)
-    ax.set_xlabel("Expected difference (Δ)")
-    ax.set_ylabel("log₁₀(sample size)")
-    ax.set_title(f"Sample Size Curve for {biomarker}")
+        # Plotting
+        fig, ax = plt.subplots()
+        ax.plot(delta_plot, log_sample_plot, linewidth=2)
+        ax.set_xlabel("Expected difference (Δ)")
+        ax.set_ylabel("log₁₀(sample size)")
+        ax.set_title(f"Sample Size Curve for {biomarker}")
 
-    # Force a meaningful y-axis even if sample sizes are all ~1
-    y_min = 0.0
-    y_max = log_sample_sizes.max()
-    if y_max - y_min < 0.5:
-        y_max = y_min + 0.5
-    ax.set_ylim(y_min, y_max)
+        # Force y-axis visibility
+        y_min = 0.0
+        y_max = log_sample_plot.max()
+        if y_max - y_min < 0.5:
+            y_max = y_min + 0.5
+        ax.set_ylim(y_min, y_max)
 
-    ax.grid(True)
-    st.pyplot(fig)
-
-
-
+        ax.grid(True)
+        st.pyplot(fig)
 
 # Reference and contact
 st.markdown("---")
