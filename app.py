@@ -78,11 +78,6 @@ biomarker = st.selectbox("Select biomarker", valid_biomarkers)
 bdata = biomarker_data[biomarker][res_key]
 ref = long_refs.get((biomarker, res_key), "Reference not available.")
 
-col1, col2, col3 = st.columns(3)
-with col1:
-    alpha = st.number_input("Alpha", min_value=0.001, max_value=0.5, value=0.05, step=0.01)
-with col2:
-    power = st.number_input("Power", min_value=0.01, max_value=0.99, value=0.8, step=0.05)
 
 col1, col2, col3 = st.columns(3)
 
