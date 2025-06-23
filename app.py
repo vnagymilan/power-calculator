@@ -144,12 +144,16 @@ if st.button("Show sample size curve"):
     z_beta = norm.ppf(power)
     sample_sizes = 2 * ((z_alpha + z_beta) * total_sd / delta_range) ** 2
 
+    # Clamp minimum sample size to avoid log10(sample_sizes < 1)
+    sample_sizes = np.clip(sample_sizes, 1, None)
+
     # Plotting log10 of sample size
     fig, ax = plt.subplots()
     ax.plot(delta_range, np.log10(sample_sizes), linewidth=2)
     ax.set_xlabel("Expected difference (Δ)")
     ax.set_ylabel("log₁₀(sample size)")
     ax.set_title(f"Sample Size Curve for {biomarker}")
+    ax.set_ylim(bottom=1.0)  # Prevent negative y-values
     ax.grid(True)
 
     st.pyplot(fig)
