@@ -135,6 +135,8 @@ st.markdown(f"<div style='text-align: center; font-size: 48px; font-weight: bold
 import matplotlib.pyplot as plt
 
 # Optional sample size curve
+import plotly.graph_objects as go  # Put this at the top of your file with your other imports
+
 if st.button("Show sample size curve"):
     # Generate Δ values
     delta_range = np.linspace(delta_min, delta_max, 100)
@@ -144,33 +146,37 @@ if st.button("Show sample size curve"):
     z_beta = norm.ppf(power)
     raw_sample_sizes = 2 * ((z_alpha + z_beta) * total_sd / delta_range) ** 2
 
-    # Find the first index where sample size reaches or drops below 1
+    # Only include values where sample size > 1
     valid_indices = np.where(raw_sample_sizes > 1)[0]
-
     if len(valid_indices) == 0:
         st.warning("All expected differences result in sample size ≤ 1. No curve to display.")
     else:
-        last_valid_index = valid_indices[-1] + 1  # include one more for visual edge
+        last_valid_index = valid_indices[-1] + 1
         delta_plot = delta_range[:last_valid_index]
         sample_plot = raw_sample_sizes[:last_valid_index]
-        log_sample_plot = np.log10(sample_plot)
 
-        # Plotting
-        fig, ax = plt.subplots()
-        ax.plot(delta_plot, log_sample_plot, linewidth=2)
-        ax.set_xlabel("Expected difference (Δ)")
-        ax.set_ylabel("log₁₀(sample size)")
-        ax.set_title(f"Sample Size Curve for {biomarker}")
+        # Create interactive Plotly figure
+        fig = go.Figure()
 
-        # Force y-axis visibility
-        y_min = 0.0
-        y_max = log_sample_plot.max()
-        if y_max - y_min < 0.5:
-            y_max = y_min + 0.5
-        ax.set_ylim(y_min, y_max)
+        fig.add_trace(go.Scatter(
+            x=delta_plot,
+            y=sample_plot,
+            mode='lines',
+            line=dict(width=3),
+            hovertemplate='Δ: %{x:.2f}<br>Sample size: %{y:.0f}<extra></extra>',
+            name='Sample Size'
+        ))
 
-        ax.grid(True)
-        st.pyplot(fig)
+        fig.update_layout(
+            title=f"Sample Size Curve for {biomarker}",
+            xaxis_title="Expected difference (Δ)",
+            yaxis_title="Sample size",
+            hovermode="x",  # enables interactive vertical guide line
+            template="simple_white",  # clean look, no grid
+            margin=dict(l=40, r=40, t=40, b=40)
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
 
 # Reference and contact
 st.markdown("---")
