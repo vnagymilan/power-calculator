@@ -167,16 +167,16 @@ if st.button("Show sample size curve"):
             name='Sample Size'
         ))
 
-      fig.update_layout(
-    xaxis_title="Expected difference (Δ)",
-    yaxis_title="log₁₀(sample size)",
-    title=f"Sample Size Curve for {biomarker}",
-    showlegend=False,
-    template="simple_white",
-    yaxis=dict(showgrid=True, gridcolor='LightGray', zeroline=False),
-    xaxis=dict(showgrid=False),
-    margin=dict(l=40, r=40, t=40, b=40)
-)
+        fig.update_layout(
+            xaxis_title="Expected difference (Δ)",
+            yaxis_title="log₁₀(sample size)",
+            title=f"Sample Size Curve for {biomarker}",
+            showlegend=False,
+            template="simple_white",
+            yaxis=dict(showgrid=True, gridcolor='LightGray', zeroline=False),
+            xaxis=dict(showgrid=False),
+            margin=dict(l=40, r=40, t=40, b=40)
+        )
 
         st.plotly_chart(fig, use_container_width=True)
 
