@@ -137,25 +137,29 @@ import matplotlib.pyplot as plt
 # Optional sample size curve
 import plotly.graph_objects as go
 
-import plotly.graph_objects as go
-
-# Define delta_range now
-delta_range = np.linspace(delta_min, delta_max, 100)
+# Define delta_range
+delta_range = np.linspace(delta_min, delta_max, 1000)
 
 # Compute sample size (real values)
 sample_sizes = 2 * ((z_alpha + z_beta) * total_sd / delta_range) ** 2
-sample_sizes = np.clip(sample_sizes, 1, None)  # Minimum sample size = 1
+sample_sizes = np.clip(sample_sizes, 1, None)  # Clip at 1
 log_sample_sizes = np.log10(sample_sizes)
+
+# Trim values to keep only where log_sample_size > 0
+valid_indices = log_sample_sizes > 0
+delta_range_trimmed = delta_range[valid_indices]
+log_sample_sizes_trimmed = log_sample_sizes[valid_indices]
+sample_sizes_trimmed = sample_sizes[valid_indices]
 
 # Build interactive plot
 fig = go.Figure()
 
 fig.add_trace(go.Scatter(
-    x=delta_range,
-    y=log_sample_sizes,
+    x=delta_range_trimmed,
+    y=log_sample_sizes_trimmed,
     mode='lines',
-    hovertemplate='Δ: %{x:.2f}<br>Sample size: %{customdata:.0f}<extra></extra>',
-    customdata=np.expand_dims(sample_sizes, axis=1),
+    hovertemplate='Sample size: %{customdata:.0f}<extra></extra>',
+    customdata=np.expand_dims(sample_sizes_trimmed, axis=1),
     line=dict(width=3)
 ))
 
@@ -172,6 +176,7 @@ fig.update_xaxes(showgrid=False)
 fig.update_yaxes(showgrid=True, zeroline=False)
 
 st.plotly_chart(fig, use_container_width=True)
+
 
 # Reference and contact
 st.markdown("---")
