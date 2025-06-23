@@ -144,8 +144,8 @@ if st.button("Show sample size curve"):
     z_beta = norm.ppf(power)
     sample_sizes = 2 * ((z_alpha + z_beta) * total_sd / delta_range) ** 2
 
-    # Clamp minimum sample size to avoid log10(sample_sizes < 1)
-    sample_sizes = np.clip(sample_sizes, 1, None)
+    # Clamp minimum sample size to avoid log10(sample_sizes < 0)
+    sample_sizes = np.clip(sample_sizes, 0, None)
 
     # Plotting log10 of sample size
     fig, ax = plt.subplots()
