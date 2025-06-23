@@ -106,6 +106,7 @@ st.markdown(f"<div style='text-align: center; font-size: 48px; font-weight: bold
 st.markdown("---")
 st.markdown(f"""
 <sup>*</sup>{ref}  
+
 Questions or suggestions? Contact **[musccvi@musc.edu](mailto:musccvi@musc.edu)**
 """, unsafe_allow_html=True)
 
