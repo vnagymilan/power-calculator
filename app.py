@@ -158,19 +158,17 @@ fig.add_trace(go.Scatter(
     x=delta_range_trimmed,
     y=log_sample_sizes_trimmed,
     mode='lines',
-    hovertemplate='<b>Sample size:</b> %{customdata:.0f}<extra></extra>',
-    customdata=np.expand_dims(sample_sizes_trimmed, axis=1),
     line=dict(width=3, color='blue'),
-    hoverinfo='skip',
+    hovertemplate='<b>Sample size:</b> %{text}<extra></extra>',
+    text=[f"{int(np.round(val))}" for val in sample_sizes_trimmed],
     showlegend=False
 ))
 
 fig.update_layout(
     xaxis_title="Expected difference (Δ)",
     yaxis_title="log₁₀(sample size)",
-    hovermode="x unified",
+    hovermode="x",
     hoverlabel=dict(bgcolor="white", bordercolor="black", font_size=13),
-    showlegend=False,
     plot_bgcolor="white",
     margin=dict(l=40, r=40, t=20, b=40),
 )
