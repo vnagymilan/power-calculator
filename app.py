@@ -102,9 +102,10 @@ st.markdown("---")
 st.markdown(f"<div style='text-align: center; font-size: 24px;'>Required sample size per group</div>", unsafe_allow_html=True)
 st.markdown(f"<div style='text-align: center; font-size: 48px; font-weight: bold;'>{n_rounded} patients</div>", unsafe_allow_html=True)
 
-# Footnote and contact
+# Reference and contact
 st.markdown("---")
 st.markdown(f"""
 <sup>*</sup>{ref}  
 Questions or suggestions? Contact **[musccvi@musc.edu](mailto:musccvi@musc.edu)**
 """, unsafe_allow_html=True)
+
