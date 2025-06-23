@@ -144,12 +144,22 @@ if st.button("Show sample size curve"):
     z_beta = norm.ppf(power)
     sample_sizes = 2 * ((z_alpha + z_beta) * total_sd / delta_range) ** 2
 
-    # Force minimum sample size of 1
+    # Clip to a minimum of 1 and calculate log10
     sample_sizes = np.maximum(sample_sizes, 1)
+    log_sample_sizes = np.log10(sample_sizes)
+
+    # Find index where plateau starts (i.e., where sample size = 1)
+    plateau_index = np.where(sample_sizes == 1)[0]
+    if len(plateau_index) > 0:
+        first_plateau = plateau_index[0]
+        # Extend the Δ and log(sample size) arrays for a visible flat line
+        extended_deltas = np.linspace(delta_range[first_plateau], delta_max, 50)
+        delta_range = np.concatenate((delta_range[:first_plateau], extended_deltas))
+        log_sample_sizes = np.concatenate((log_sample_sizes[:first_plateau], np.zeros_like(extended_deltas)))
 
     # Plotting
     fig, ax = plt.subplots()
-    ax.plot(delta_range, np.log10(sample_sizes), linewidth=2)
+    ax.plot(delta_range, log_sample_sizes, linewidth=2)
     ax.set_xlabel("Expected difference (Δ)")
     ax.set_ylabel("log₁₀(sample size)")
     ax.set_title(f"Sample Size Curve for {biomarker}")
@@ -157,6 +167,7 @@ if st.button("Show sample size curve"):
     ax.grid(True)
 
     st.pyplot(fig)
+
 
 # Reference and contact
 st.markdown("---")
