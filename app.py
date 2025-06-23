@@ -95,6 +95,16 @@ elif biomarker == "Segment stenosis score":
 else:
     delta_min, delta_max = 0.001, None
 
+# Define Δ input limits based on biomarker type
+if biomarker == "CT-FFR":
+    delta_min, delta_max = 0.001, 1.0
+elif biomarker == "Segment involvement score":
+    delta_min, delta_max = 1.0, 16.0
+elif biomarker == "Segment stenosis score":
+    delta_min, delta_max = 1.0, 48.0
+else:
+    delta_min, delta_max = 0.001, None  # unbounded upper limit
+
 with col3:
     delta = st.number_input(
         "Δ (Expected difference)",
