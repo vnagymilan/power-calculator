@@ -131,6 +131,29 @@ st.markdown("---")
 st.markdown(f"<div style='text-align: center; font-size: 24px;'>Required sample size per group</div>", unsafe_allow_html=True)
 st.markdown(f"<div style='text-align: center; font-size: 48px; font-weight: bold;'>{n_rounded} patients</div>", unsafe_allow_html=True)
 
+import matplotlib.pyplot as plt
+
+# Optional sample size curve
+if st.button("Show sample size curve"):
+    # Generate Δ values
+    delta_range = np.linspace(delta_min, delta_max, 100)
+
+    # Sample size formula
+    z_alpha = norm.ppf(1 - alpha / 2)
+    z_beta = norm.ppf(power)
+    sample_sizes = 2 * ((z_alpha + z_beta) * total_sd / delta_range) ** 2
+
+    # Plotting log10 of sample size
+    fig, ax = plt.subplots()
+    ax.plot(delta_range, np.log10(sample_sizes), linewidth=2)
+    ax.set_xlabel("Expected difference (Δ)")
+    ax.set_ylabel("log₁₀(sample size)")
+    ax.set_title(f"Sample Size Curve for {biomarker}")
+    ax.grid(True)
+
+    st.pyplot(fig)
+
+
 # Reference and contact
 st.markdown("---")
 st.markdown(f"""
