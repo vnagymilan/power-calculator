@@ -175,7 +175,7 @@ if design.startswith("Independent"):
         step = 0.005 if biomarker == "CT-FFR" else 0.1
         fmt = "%.4f" if biomarker == "CT-FFR" else "%.2f"
         delta = st.number_input(
-            "Δ (Expected proportionate change/difference)",
+            "Δ (Expected change/difference in %)",
             min_value=float(delta_min),
             max_value=float(delta_max),
             value=float(delta_min),
@@ -197,7 +197,7 @@ if design.startswith("Independent"):
 else:
     with colC:
         delta_pct = st.number_input(
-            "Δ (Required proportionate change/difference)",
+            "Δ (Expected change/difference in %)",
             min_value=1.0,
             max_value=20.0,
             value=5.0,
@@ -214,7 +214,7 @@ else:
     sample_sizes = np.clip(sample_sizes, 1, None)
     y_vals = np.log10(sample_sizes)
 
-    x_title = "Required proportionate change/difference (Δ)"
+    x_title = "Expected proportionate change/difference (Δ)"
     # no extra percent sign in hover
     hover = "Δ: %{x:.2f}<br>Sample size: %{customdata:.0f}<extra></extra>"
 
