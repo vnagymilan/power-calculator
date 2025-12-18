@@ -2,34 +2,50 @@ import streamlit as st
 import numpy as np
 from scipy.stats import norm
 from PIL import Image
+import plotly.graph_objects as go
 
 # Page setup
 st.set_page_config(page_title="PCD-CT vs. EID-CT Power Calculator", layout="centered")
 
-# Load MUSC logo
-logo_path = "musc_logo.jpeg"  # make sure this file is in the same directory or adjust path
-logo = Image.open(logo_path)
+# Load MUSC logo (fail-safe)
+logo = None
+try:
+    logo_path = "musc_logo.jpeg"  # ensure this file is in the repo root
+    logo = Image.open(logo_path)
+except Exception:
+    logo = None
 
 # Title and logo
 col1, col2 = st.columns([1, 4])
 with col1:
-    st.image(logo, width=100)
+    if logo is not None:
+        st.image(logo, width=100)
 with col2:
-    st.markdown("""
+    st.markdown(
+        """
         <div style='padding-top: 15px; font-size: 26px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'>
             PCD-CT vs. EID-CT Sample Size Calculator
         </div>
-    """, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True,
+    )
 
 # Introduction
-st.markdown("""
-This calculator estimates the **sample size per group** needed to detect a difference (Δ) in imaging biomarkers between CT systems.  
-Please enter **absolute values** (e.g., entering 1.5 for CT-FFR is invalid).  
+st.markdown(
+    """
+This calculator estimates the **sample size per group** needed to detect a difference in imaging biomarkers between CT systems.
+
+You can run the calculator in two modes:
+
+- **Independent groups (parallel)**: PCD-CT and EID-CT are used in different patients. Uses **absolute Δ** and **total SD**.
+- **Paired (within-patient, Symons-style)**: Same patients measured on both systems (or baseline vs follow-up). Uses **Δ%** and **inter-scanner SD (%)**.
+
 You can manually adjust standard deviation values below.
 
-- **Biological SD** represents variation across different patients.  
-- **Inter-scanner SD** reflects intra-individual variation when the same patient is scanned on both PCD-CT and EID-CT.
-""")
+- **Biological SD** represents variation across different patients (used in independent mode).
+- **Inter-scanner SD** reflects intra-individual variation when the same patient is scanned on both systems (used in paired mode as Symons-style %SD).
+"""
+)
 
 # Long-format references
 long_refs = {
@@ -45,18 +61,20 @@ long_refs = {
     ("Total plaque volume (mm³)", "UHR"): "Vecsey-Nagy M., Tremamunno G., Schoepf UJ., et al. Coronary Plaque Quantification with Ultrahigh-Spatial-Resolution Photon-counting Detector CT: Intraindividual Comparison with Energy-integrating Detector CT. Radiology. 2025;314:e241479.",
     ("Calcified plaque volume (mm³)", "UHR"): "Vecsey-Nagy M., Tremamunno G., Schoepf UJ., et al. Coronary Plaque Quantification with Ultrahigh-Spatial-Resolution Photon-counting Detector CT: Intraindividual Comparison with Energy-integrating Detector CT. Radiology. 2025;314:e241479.",
     ("Fibrotic plaque volume (mm³)", "UHR"): "Vecsey-Nagy M., Tremamunno G., Schoepf UJ., et al. Coronary Plaque Quantification with Ultrahigh-Spatial-Resolution Photon-counting Detector CT: Intraindividual Comparison with Energy-integrating Detector CT. Radiology. 2025;314:e241479.",
-    ("Low-attenuation plaque volume (mm³)", "UHR"): "Vecsey-Nagy M., Tremamunno G., Schoepf UJ., et al. Coronary Plaque Quantification with Ultrahigh-Spatial-Resolution Photon-counting Detector CT: Intraindividual Comparison with Energy-integrating Detector CT. Radiology. 2025;314:e241479."
+    ("Low-attenuation plaque volume (mm³)", "UHR"): "Vecsey-Nagy M., Tremamunno G., Schoepf UJ., et al. Coronary Plaque Quantification with Ultrahigh-Spatial-Resolution Photon-counting Detector CT: Intraindividual Comparison with Energy-integrating Detector CT. Radiology. 2025;314:e241479.",
 }
 
 # SD data
+# NOTE: Biological SD is used in independent mode.
+# Inter-scanner SD is used in paired mode as Symons-style percent SD (as you requested).
 biomarker_data = {
     "Stenosis severity (%)": {
         "Standard": {"bio_sd": 11.6, "inter_sd": 2.4},
-        "UHR": {"bio_sd": 11.6, "inter_sd": 10.2}
+        "UHR": {"bio_sd": 11.6, "inter_sd": 10.2},
     },
     "CT-FFR": {
         "Standard": {"bio_sd": 0.08, "inter_sd": 0.09},
-        "UHR": {"bio_sd": 0.08, "inter_sd": 0.11}
+        "UHR": {"bio_sd": 0.08, "inter_sd": 0.11},
     },
     "Segment stenosis score": {"UHR": {"bio_sd": 5.93, "inter_sd": 3.18}},
     "Segment involvement score": {"UHR": {"bio_sd": 4.44, "inter_sd": 1.47}},
@@ -66,7 +84,7 @@ biomarker_data = {
     "Total plaque volume (mm³)": {"UHR": {"bio_sd": 515.00, "inter_sd": 239.54}},
     "Calcified plaque volume (mm³)": {"UHR": {"bio_sd": 148.60, "inter_sd": 142.02}},
     "Fibrotic plaque volume (mm³)": {"UHR": {"bio_sd": 380.10, "inter_sd": 206.60}},
-    "Low-attenuation plaque volume (mm³)": {"UHR": {"bio_sd": 11.90, "inter_sd": 84.59}}
+    "Low-attenuation plaque volume (mm³)": {"UHR": {"bio_sd": 11.90, "inter_sd": 84.59}},
 }
 
 # Inputs
@@ -78,16 +96,27 @@ biomarker = st.selectbox("Select biomarker", valid_biomarkers)
 bdata = biomarker_data[biomarker][res_key]
 ref = long_refs.get((biomarker, res_key), "Reference not available.")
 
+# Study design toggle (new)
+design = st.radio(
+    "Study design",
+    ["Independent groups (parallel)", "Paired (within-patient, Symons-style)"],
+    index=0,
+    horizontal=True,
+)
 
-col1, col2, col3 = st.columns(3)
+colA, colB, colC = st.columns(3)
 
-with col1:
+with colA:
     alpha = st.number_input("Alpha", min_value=0.001, max_value=0.5, value=0.05, step=0.01)
 
-with col2:
+with colB:
     power = st.number_input("Power", min_value=0.01, max_value=0.99, value=0.8, step=0.05)
 
-# Δ range dictionary
+# Z values (shared)
+z_alpha = norm.ppf(1 - alpha / 2)
+z_beta = norm.ppf(power)
+
+# Delta limits for independent absolute Δ (existing behavior)
 delta_limits = {
     "Stenosis severity (%)": (1.0, 100.0),
     "CT-FFR": (0.001, 1.0),
@@ -99,76 +128,118 @@ delta_limits = {
     "Total plaque volume (mm³)": (1.0, 10000.0),
     "Calcified plaque volume (mm³)": (1.0, 10000.0),
     "Fibrotic plaque volume (mm³)": (1.0, 10000.0),
-    "Low-attenuation plaque volume (mm³)": (1.0, 10000.0)
+    "Low-attenuation plaque volume (mm³)": (1.0, 10000.0),
 }
 
-# Use delta range dynamically
-delta_min, delta_max = delta_limits.get(biomarker, (0.001, 100.0))
+# SD inputs (kept for both modes)
+bio_sd = st.number_input("Biological SD", value=float(bdata["bio_sd"]), format="%.4f")
 
-with col3:
-    delta = st.number_input(
-        "Δ (Expected difference)",
-        min_value=delta_min,
-        max_value=delta_max,
-        value=delta_min,
-        step=0.1
-    )
+# Label inter-scanner SD differently depending on mode (but keep it editable in both)
+if design.startswith("Paired"):
+    inter_label = "Inter-scanner SD (%)"
+else:
+    inter_label = "Inter-scanner SD*"
 
+inter_sd = st.number_input(inter_label, value=float(bdata["inter_sd"]), format="%.4f")
 
+# Calculation + curve settings switch by design
+if design.startswith("Independent"):
+    # Independent: total SD, absolute Δ
+    total_sd = float(np.sqrt(bio_sd**2 + inter_sd**2))
+    st.markdown(f"**Total SD:** {total_sd:.3f}")
 
-bio_sd = st.number_input("Biological SD", value=bdata["bio_sd"], format="%.4f")
-inter_sd = st.number_input("Inter-scanner SD*", value=bdata["inter_sd"], format="%.4f")
-total_sd = np.sqrt(bio_sd**2 + inter_sd**2)
-st.markdown(f"**Total SD:** {total_sd:.3f}")
+    delta_min, delta_max = delta_limits.get(biomarker, (0.001, 100.0))
 
-# Sample size
-z_alpha = norm.ppf(1 - alpha / 2)
-z_beta = norm.ppf(power)
-n = 2 * ((z_alpha + z_beta) * total_sd / delta) ** 2
-n_rounded = int(np.ceil(n))
+    with colC:
+        # step size: CT-FFR needs smaller step
+        step = 0.005 if biomarker == "CT-FFR" else 0.1
+        fmt = "%.4f" if biomarker == "CT-FFR" else "%.2f"
+        delta = st.number_input(
+            "Δ (Expected difference)",
+            min_value=float(delta_min),
+            max_value=float(delta_max),
+            value=float(delta_min),
+            step=float(step),
+            format=fmt,
+        )
+
+    # Independent sample size (two-sample)
+    n = 2 * (((z_alpha + z_beta) * total_sd / delta) ** 2)
+    n_rounded = int(np.ceil(n))
+
+    # Curve: Δ absolute
+    delta_range = np.linspace(delta_min, delta_max, 1000)
+    sample_sizes = 2 * (((z_alpha + z_beta) * total_sd / delta_range) ** 2)
+    sample_sizes = np.clip(sample_sizes, 1, None)
+    log_sample_sizes = np.log10(sample_sizes)
+
+    valid = log_sample_sizes > 0
+    x_vals = delta_range[valid]
+    y_vals = log_sample_sizes[valid]
+    ss_vals = sample_sizes[valid]
+
+    x_title = "Expected difference (Δ)"
+    hover = "Δ: %{x:.4f}<br>Sample size: %{customdata:.0f}<extra></extra>"
+
+else:
+    # Paired (Symons-style): inter-scanner SD (%) and Δ% input
+    # Using the Symons form: n = f(alpha, P) * sigma^2 * 2 / delta^2
+    # where f(alpha,P) = (z_alpha + z_beta)^2, sigma = inter_sd (%), delta = Δ% (%)
+    with colC:
+        delta_pct = st.number_input(
+            "Δ% (Required proportionate change)",
+            min_value=1.0,
+            max_value=20.0,
+            value=5.0,
+            step=0.5,
+            format="%.2f",
+        )
+
+    f = (z_alpha + z_beta) ** 2
+    n = f * (inter_sd ** 2) * 2 / (delta_pct ** 2)
+    n_rounded = int(np.ceil(n))
+
+    # Curve: Δ% 1–20
+    delta_pct_range = np.linspace(1.0, 20.0, 600)
+    sample_sizes = f * (inter_sd ** 2) * 2 / (delta_pct_range ** 2)
+    sample_sizes = np.clip(sample_sizes, 1, None)
+    log_sample_sizes = np.log10(sample_sizes)
+
+    valid = log_sample_sizes > 0
+    x_vals = delta_pct_range[valid]
+    y_vals = log_sample_sizes[valid]
+    ss_vals = sample_sizes[valid]
+
+    x_title = "Required proportionate change (Δ%)"
+    hover = "Δ%: %{x:.2f}%<br>Sample size: %{customdata:.0f}<extra></extra>"
 
 # Output
 st.markdown("---")
-st.markdown(f"<div style='text-align: center; font-size: 24px;'>Required sample size per group</div>", unsafe_allow_html=True)
-st.markdown(f"<div style='text-align: center; font-size: 48px; font-weight: bold;'>{n_rounded} patients</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center; font-size: 24px;'>Required sample size per group</div>", unsafe_allow_html=True)
+st.markdown(
+    f"<div style='text-align: center; font-size: 48px; font-weight: bold;'>{n_rounded} patients</div>",
+    unsafe_allow_html=True,
+)
 
-import matplotlib.pyplot as plt
-
-# Optional sample size curve
-import plotly.graph_objects as go
-
-# Define delta_range
-delta_range = np.linspace(delta_min, delta_max, 1000)
-
-# Compute sample size (real values)
-sample_sizes = 2 * ((z_alpha + z_beta) * total_sd / delta_range) ** 2
-sample_sizes = np.clip(sample_sizes, 1, None)  # Clip at 1
-log_sample_sizes = np.log10(sample_sizes)
-
-# Trim values to keep only where log_sample_size > 0
-valid_indices = log_sample_sizes > 0
-delta_range_trimmed = delta_range[valid_indices]
-log_sample_sizes_trimmed = log_sample_sizes[valid_indices]
-sample_sizes_trimmed = sample_sizes[valid_indices]
-
-# Build interactive plot
+# Single dynamic plot (same position, switches by design)
 fig = go.Figure()
-
-fig.add_trace(go.Scatter(
-    x=delta_range_trimmed,
-    y=log_sample_sizes_trimmed,
-    mode='lines',
-    line=dict(width=3, color='blue'),
-    name='',  # Empty name disables trace name
-    hovertemplate='Sample size: %{customdata:.0f}<extra></extra>',
-    customdata=sample_sizes_trimmed.reshape(-1, 1),
-    showlegend=False
-))
+fig.add_trace(
+    go.Scatter(
+        x=x_vals,
+        y=y_vals,
+        mode="lines",
+        line=dict(width=3),
+        name="",
+        hovertemplate=hover,
+        customdata=ss_vals,
+        showlegend=False,
+    )
+)
 
 fig.update_layout(
-    xaxis_title="Expected difference (Δ)",
+    xaxis_title=x_title,
     yaxis_title="log₁₀(sample size)",
-    hovermode="x unified",  # Enables vertical line
+    hovermode="x unified",
     hoverlabel=dict(bgcolor="white", bordercolor="black", font_size=13),
     plot_bgcolor="white",
     margin=dict(l=40, r=40, t=20, b=40),
@@ -179,12 +250,13 @@ fig.update_yaxes(showgrid=True, zeroline=False)
 
 st.plotly_chart(fig, use_container_width=True)
 
-
 # Reference and contact
 st.markdown("---")
-st.markdown(f"""
+st.markdown(
+    f"""
 <sup>*</sup>{ref}  
 
 Questions or suggestions? Contact **[musccvi@musc.edu](mailto:musccvi@musc.edu)**
-""", unsafe_allow_html=True)
-
+""",
+    unsafe_allow_html=True,
+)
