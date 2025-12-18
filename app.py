@@ -22,28 +22,21 @@ with col1:
         st.image(logo, width=100)
 with col2:
     st.markdown(
-        """
-        <div style='padding-top: 15px; font-size: 26px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'>
-            PCD-CT vs. EID-CT Sample Size Calculator
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-# Introduction
-st.markdown(
     """
 This calculator estimates the **sample size per group** needed to detect a difference in imaging biomarkers between CT systems.
 
 You can run the calculator in two modes:
 
-- **Independent groups (parallel)**: PCD-CT and EID-CT are used in different patients. Uses **absolute Δ** and **total SD**.
-- **Paired (within-patient, Symons-style)**: Same patients measured on both systems (or baseline vs follow-up). Uses **Δ%** and **inter-scanner SD (%)**.
+- **Independent groups (parallel)**: PCD-CT and EID-CT are used in different patients.  
+  *Example:* Detect a **3 HU** difference in PCAT attenuation between groups, with a **total SD of 8 HU**.
+
+- **Paired (within-patient)**: The same patients are measured on both systems (or baseline vs follow-up).  
+  *Example:* Detect a **10% change** in a biomarker, with an **inter-scanner SD of 6%**.
 
 You can manually adjust standard deviation values below.
 
 - **Biological SD** represents variation across different patients (used in independent mode).
-- **Inter-scanner SD** reflects intra-individual variation when the same patient is scanned on both systems (used in paired mode as Symons-style %SD).
+- **Inter-scanner SD** reflects intra-individual variation when the same patient is measured twice (used in paired mode).
 """
 )
 
@@ -66,7 +59,8 @@ long_refs = {
 
 # SD data
 # NOTE: Biological SD is used in independent mode.
-# Inter-scanner SD is used in paired mode as Symons-style percent SD (as you requested).
+# Inter-scanner SD values below should be **percent SD (%)** for paired mode.
+# TODO: Replace the placeholder inter_sd values with your provided percentage SD table.
 biomarker_data = {
     "Stenosis severity (%)": {
         "Standard": {"bio_sd": 11.6, "inter_sd": 2.4},
@@ -88,6 +82,14 @@ biomarker_data = {
 }
 
 # Inputs
+# Study design toggle (new)
+design = st.radio(
+    "Study design",
+    ["Independent groups (parallel)", "Paired (within-patient)"],
+    index=0,
+    horizontal=True,
+)
+
 resolution = st.selectbox("Select PCD-CT resolution", ["Standard (0.4 mm)", "Ultrahigh-resolution (0.2 mm)"])
 res_key = "Standard" if resolution.startswith("Standard") else "UHR"
 
@@ -95,14 +97,6 @@ valid_biomarkers = [k for k in biomarker_data if res_key in biomarker_data[k]]
 biomarker = st.selectbox("Select biomarker", valid_biomarkers)
 bdata = biomarker_data[biomarker][res_key]
 ref = long_refs.get((biomarker, res_key), "Reference not available.")
-
-# Study design toggle (new)
-design = st.radio(
-    "Study design",
-    ["Independent groups (parallel)", "Paired (within-patient, Symons-style)"],
-    index=0,
-    horizontal=True,
-)
 
 colA, colB, colC = st.columns(3)
 
@@ -131,14 +125,15 @@ delta_limits = {
     "Low-attenuation plaque volume (mm³)": (1.0, 10000.0),
 }
 
-# SD inputs (kept for both modes)
-bio_sd = st.number_input("Biological SD", value=float(bdata["bio_sd"]), format="%.4f")
-
-# Label inter-scanner SD differently depending on mode (but keep it editable in both)
+# SD inputs
 if design.startswith("Paired"):
+    # In paired mode we only use inter-scanner variability (within-patient),
+    # so do not show Biological SD input.
+    bio_sd = 0.0
     inter_label = "Inter-scanner SD (%)"
 else:
-    inter_label = "Inter-scanner SD*"
+    bio_sd = st.number_input("Biological SD", value=float(bdata["bio_sd"]), format="%.4f")
+    inter_label = "Inter-scanner SD"
 
 inter_sd = st.number_input(inter_label, value=float(bdata["inter_sd"]), format="%.4f")
 
@@ -182,8 +177,8 @@ if design.startswith("Independent"):
     hover = "Δ: %{x:.4f}<br>Sample size: %{customdata:.0f}<extra></extra>"
 
 else:
-    # Paired (Symons-style): inter-scanner SD (%) and Δ% input
-    # Using the Symons form: n = f(alpha, P) * sigma^2 * 2 / delta^2
+    # Paired: inter-scanner SD (%) and Δ% input
+    # Using the paired design form: n = f(alpha, P) * sigma^2 * 2 / delta^2
     # where f(alpha,P) = (z_alpha + z_beta)^2, sigma = inter_sd (%), delta = Δ% (%)
     with colC:
         delta_pct = st.number_input(
