@@ -4,14 +4,14 @@ from scipy.stats import norm
 from PIL import Image
 import plotly.graph_objects as go
 
+# -----------------------------
 # Page setup
+# -----------------------------
 st.set_page_config(page_title="PCD-CT vs. EID-CT Power Calculator", layout="centered")
 
-# Title
-st.title("PCD-CT vs. EID-CT Power Calculator")
-st.caption("Sample size estimation for independent-group and paired (within-patient) study designs")
-
-# Load MUSC logo (fail-safe)
+# -----------------------------
+# Header: logo next to title
+# -----------------------------
 logo = None
 try:
     logo_path = "musc_logo.jpeg"  # ensure this file is in the repo root
@@ -19,33 +19,35 @@ try:
 except Exception:
     logo = None
 
-# Logo + intro
-col1, col2 = st.columns([1, 4])
-with col1:
+hcol1, hcol2 = st.columns([1, 5])
+with hcol1:
     if logo is not None:
-        st.image(logo, width=100)
+        st.image(logo, width=110)
+with hcol2:
+    st.markdown("<h1 style='margin-bottom: 0;'>PCD-CT vs. EID-CT Power Calculator</h1>", unsafe_allow_html=True)
 
-with col2:
-    st.markdown(
-        """
+# -----------------------------
+# Intro text (clinical examples)
+# -----------------------------
+st.markdown(
+    """
 This calculator estimates the **sample size per group** needed to detect a difference in imaging biomarkers between CT systems.
 
-Two common use cases:
+Two common study designs:
 
 - **Independent groups (parallel):** different patients are scanned on different systems.  
-  *Example:* Compare **CT-FFR** between a cohort scanned on EID-CT and a different cohort scanned on PCD-CT.
+  *Example:* Compare **CT-FFR** (or plaque metrics) between **two cohorts** scanned on different systems.
 
 - **Paired (within-patient):** the same patients are measured twice.  
-  *Example:* **follow-up plaque progression** studies (baseline vs follow-up), or intra-individual EID-CT vs PCD-CT comparisons.
+  *Example:* **follow-up plaque progression** (baseline vs follow-up) or an **intra-individual** EID-CT vs PCD-CT scan-retest study.
 
 You can manually adjust variability inputs below.
-
-- **Biological SD** represents variation across different patients.
-- **Inter-scanner SD** represents variation when the same patient is measured twice.
 """
-    )
+)
 
-# Long-format references
+# -----------------------------
+# References
+# -----------------------------
 long_refs = {
     ("Stenosis severity (%)", "Standard"): "Wolf E V., Gnasso C., Schoepf UJ., et al. Intra-individual comparison of coronary artery stenosis measurements between energy-integrating detector CT and photon-counting detector CT. Imaging. 2023:1–8.",
     ("CT-FFR", "Standard"): "Zsarnoczay E., Pinos D., Schoepf UJ., et al. Intra-individual comparison of coronary CT angiography-based FFR between energy-integrating and photon-counting detector CT systems. Int J Cardiol. 2024;399:131684.",
@@ -57,13 +59,15 @@ long_refs = {
     ("EAT attenuation (HU)", "UHR"): "Kravchenko D., Vecsey-Nagy M., Tremamunno G., et al. Intra-individual comparison of epicardial adipose tissue characteristics on coronary CT angiography between photon-counting detector and energy-integrating detector CT systems. Eur J Radiol. 2024;181:111728.",
     ("PCAT attenuation (HU)", "UHR"): "Tremamunno G., Vecsey-Nagy M., Hagar MT., et al. Intra-individual Differences in Pericoronary Fat Attenuation Index Measurements Between Photon-counting and Energy-integrating Detector Computed Tomography. Acad Radiol. 2025;32:1333–43.",
     ("Total plaque volume (mm³)", "UHR"): "Vecsey-Nagy M., Tremamunno G., Schoepf UJ., et al. Coronary Plaque Quantification with Ultrahigh-Spatial-Resolution Photon-counting Detector CT: Intraindividual Comparison with Energy-integrating Detector CT. Radiology. 2025;314:e241479.",
-    ("Calcified plaque volume (mm³)", "UHR"): "Vecsey-Nagy M., Tremamunno G., Schoepf UJ., et al. Coronary Plaque Quantification with Ultrahigh-Spatial-Resolution Photon-counting Detector CT: Intraindividual Comparison with Energy-integrating Detector CT. Radiology. 2025;314:e241479.",
-    ("Fibrotic plaque volume (mm³)", "UHR"): "Vecsey-Nagy M., Tremamunno G., Schoepf UJ., et al. Coronary Plaque Quantification with Ultrahigh-Spatial-Resolution Photon-counting Detector CT: Intraindividual Comparison with Energy-integrating Detector CT. Radiology. 2025;314:e241479.",
-    ("Low-attenuation plaque volume (mm³)", "UHR"): "Vecsey-Nagy M., Tremamunno G., Schoepf UJ., et al. Coronary Plaque Quantification with Ultrahigh-Spatial-Resolution Photon-counting Detector CT: Intraindividual Comparison with Energy-integrating Detector CT. Radiology. 2025;314:e241479.",
+    ("Calcified plaque volume (mm³)", "UHR"): "Vecsey-Nagy M., Tremamunno G., Schoepf UJ., et al. Coronary Plaque Quantification with Ultrahigh-Spatial-Resolution Photon-counting Detector CT: Intraindividual Comparison with Energy-integrating detector CT. Radiology. 2025;314:e241479.",
+    ("Fibrotic plaque volume (mm³)", "UHR"): "Vecsey-Nagy M., Tremamunno G., Schoepf UJ., et al. Coronary Plaque Quantification with Ultrahigh-Spatial-Resolution Photon-counting Detector CT: Intraindividual Comparison with Energy-integrating detector CT. Radiology. 2025;314:e241479.",
+    ("Low-attenuation plaque volume (mm³)", "UHR"): "Vecsey-Nagy M., Tremamunno G., Schoepf UJ., et al. Coronary Plaque Quantification with Ultrahigh-Spatial-Resolution Photon-counting Detector CT: Intraindividual Comparison with Energy-integrating detector CT. Radiology. 2025;314:e241479.",
 }
 
-# SD data
-# NOTE: inter_sd values should be replaced with your percentage inter-scanner SD table.
+# -----------------------------
+# SD data (placeholders still)
+# TODO: replace inter_sd with your percentage inter-scanner SD table
+# -----------------------------
 biomarker_data = {
     "Stenosis severity (%)": {
         "Standard": {"bio_sd": 11.6, "inter_sd": 2.4},
@@ -84,7 +88,9 @@ biomarker_data = {
     "Low-attenuation plaque volume (mm³)": {"UHR": {"bio_sd": 11.90, "inter_sd": 84.59}},
 }
 
-# Inputs
+# -----------------------------
+# Inputs (study design FIRST)
+# -----------------------------
 design = st.radio(
     "Study design",
     ["Independent groups (parallel)", "Paired (within-patient)"],
@@ -94,7 +100,7 @@ design = st.radio(
 
 resolution = st.selectbox(
     "Select PCD-CT resolution",
-    ["Standard (0.4 mm)", "Ultrahigh-resolution (0.2 mm)"]
+    ["Standard (0.4 mm)", "Ultrahigh-resolution (0.2 mm)"],
 )
 res_key = "Standard" if resolution.startswith("Standard") else "UHR"
 
@@ -111,11 +117,10 @@ with colA:
 with colB:
     power = st.number_input("Power", min_value=0.01, max_value=0.99, value=0.8, step=0.05)
 
-# Z values
 z_alpha = norm.ppf(1 - alpha / 2)
 z_beta = norm.ppf(power)
 
-# Delta limits for independent absolute Δ
+# Δ limits for independent absolute Δ
 delta_limits = {
     "Stenosis severity (%)": (1.0, 100.0),
     "CT-FFR": (0.001, 1.0),
@@ -132,7 +137,6 @@ delta_limits = {
 
 # SD inputs
 if design.startswith("Paired"):
-    # Hide biological SD entirely
     bio_sd = 0.0
     inter_label = "Inter-scanner SD (%)"
 else:
@@ -141,9 +145,12 @@ else:
 
 inter_sd = st.number_input(inter_label, value=float(bdata["inter_sd"]), format="%.4f")
 
-# Calculation + curve settings
+# -----------------------------
+# Calculations + curve
+# -----------------------------
+selected_x = None  # for vline
+
 if design.startswith("Independent"):
-    # Independent: total SD, absolute Δ
     total_sd = float(np.sqrt(bio_sd**2 + inter_sd**2))
     st.markdown(f"**Total SD:** {total_sd:.3f}")
 
@@ -160,58 +167,47 @@ if design.startswith("Independent"):
             step=float(step),
             format=fmt,
         )
+    selected_x = float(delta)
 
-    # Two-sample sample size
     n = 2 * (((z_alpha + z_beta) * total_sd / delta) ** 2)
     n_rounded = int(np.ceil(n))
 
-    # Curve
-    delta_range = np.linspace(delta_min, delta_max, 1000)
-    sample_sizes = 2 * (((z_alpha + z_beta) * total_sd / delta_range) ** 2)
+    x_range = np.linspace(delta_min, delta_max, 1000)
+    sample_sizes = 2 * (((z_alpha + z_beta) * total_sd / x_range) ** 2)
     sample_sizes = np.clip(sample_sizes, 1, None)
-    log_sample_sizes = np.log10(sample_sizes)
-
-    valid = log_sample_sizes > 0
-    x_vals = delta_range[valid]
-    y_vals = log_sample_sizes[valid]
-    ss_vals = sample_sizes[valid]
+    y_range = np.log10(sample_sizes)
 
     x_title = "Expected difference (Δ)"
-    # IMPORTANT: no duplicate number in hover (no unified header)
     hover = "Δ: %{x:.4f}<br>Sample size: %{customdata:.0f}<extra></extra>"
 
 else:
-    # Paired: inter-scanner SD (%) and Δ% input
     with colC:
         delta_pct = st.number_input(
-            "Δ% (Required proportionate change)",
+            "Δ (Required proportionate change)",
             min_value=1.0,
             max_value=20.0,
             value=5.0,
             step=0.5,
             format="%.2f",
         )
+    selected_x = float(delta_pct)
 
     f = (z_alpha + z_beta) ** 2
     n = f * (inter_sd ** 2) * 2 / (delta_pct ** 2)
     n_rounded = int(np.ceil(n))
 
-    # Curve: Δ% 1–20
-    delta_pct_range = np.linspace(1.0, 20.0, 600)
-    sample_sizes = f * (inter_sd ** 2) * 2 / (delta_pct_range ** 2)
+    x_range = np.linspace(1.0, 20.0, 600)
+    sample_sizes = f * (inter_sd ** 2) * 2 / (x_range ** 2)
     sample_sizes = np.clip(sample_sizes, 1, None)
-    log_sample_sizes = np.log10(sample_sizes)
+    y_range = np.log10(sample_sizes)
 
-    valid = log_sample_sizes > 0
-    x_vals = delta_pct_range[valid]
-    y_vals = log_sample_sizes[valid]
-    ss_vals = sample_sizes[valid]
+    x_title = "Required proportionate change (Δ)"
+    # no second percent sign
+    hover = "Δ: %{x:.2f}<br>Sample size: %{customdata:.0f}<extra></extra>"
 
-    x_title = "Required proportionate change (Δ%)"
-    # IMPORTANT: no extra % after the number
-    hover = "Δ%: %{x:.2f}<br>Sample size: %{customdata:.0f}<extra></extra>"
-
+# -----------------------------
 # Output
+# -----------------------------
 st.markdown("---")
 st.markdown("<div style='text-align: center; font-size: 24px;'>Required sample size per group</div>", unsafe_allow_html=True)
 st.markdown(
@@ -219,29 +215,38 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Plot
+# -----------------------------
+# Plot (with vertical dashed line)
+# -----------------------------
 fig = go.Figure()
+
 fig.add_trace(
     go.Scatter(
-        x=x_vals,
-        y=y_vals,
+        x=x_range,
+        y=y_range,
         mode="lines",
         line=dict(width=3),
-        name="",
         hovertemplate=hover,
-        customdata=ss_vals,
+        customdata=sample_sizes,
         showlegend=False,
     )
+)
+
+# Vertical line at current Δ / Δ
+fig.add_vline(
+    x=selected_x,
+    line_width=2,
+    line_dash="dash",
 )
 
 fig.update_layout(
     xaxis_title=x_title,
     yaxis_title="log₁₀(sample size)",
-    # IMPORTANT: this removes the separate "header" number in the tooltip
+    # removes the extra "header" number in the tooltip box
     hovermode="closest",
     hoverlabel=dict(bgcolor="white", bordercolor="black", font_size=13),
     plot_bgcolor="white",
-    margin=dict(l=40, r=40, t=20, b=40),
+    margin=dict(l=40, r=40, t=10, b=40),
 )
 
 fig.update_xaxes(showgrid=False)
@@ -249,7 +254,9 @@ fig.update_yaxes(showgrid=True, zeroline=False)
 
 st.plotly_chart(fig, use_container_width=True)
 
-# Reference and contact
+# -----------------------------
+# Reference + contact
+# -----------------------------
 st.markdown("---")
 st.markdown(
     f"""
