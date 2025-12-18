@@ -7,6 +7,10 @@ import plotly.graph_objects as go
 # Page setup
 st.set_page_config(page_title="PCD-CT vs. EID-CT Power Calculator", layout="centered")
 
+# Title
+st.title("PCD-CT vs. EID-CT Power Calculator")
+st.caption("Sample size estimation for independent-group and paired (within-patient) study designs")
+
 # Load MUSC logo (fail-safe)
 logo = None
 try:
@@ -15,30 +19,31 @@ try:
 except Exception:
     logo = None
 
-# Title and logo
+# Logo + intro
 col1, col2 = st.columns([1, 4])
 with col1:
     if logo is not None:
         st.image(logo, width=100)
+
 with col2:
     st.markdown(
-    """
+        """
 This calculator estimates the **sample size per group** needed to detect a difference in imaging biomarkers between CT systems.
 
-You can run the calculator in two modes:
+Two common use cases:
 
-- **Independent groups (parallel)**: PCD-CT and EID-CT are used in different patients.  
-  *Example:* Detect a **3 HU** difference in PCAT attenuation between groups, with a **total SD of 8 HU**.
+- **Independent groups (parallel):** different patients are scanned on different systems.  
+  *Example:* Compare **CT-FFR** between a cohort scanned on EID-CT and a different cohort scanned on PCD-CT.
 
-- **Paired (within-patient)**: The same patients are measured on both systems (or baseline vs follow-up).  
-  *Example:* Detect a **10% change** in a biomarker, with an **inter-scanner SD of 6%**.
+- **Paired (within-patient):** the same patients are measured twice.  
+  *Example:* **follow-up plaque progression** studies (baseline vs follow-up), or intra-individual EID-CT vs PCD-CT comparisons.
 
-You can manually adjust standard deviation values below.
+You can manually adjust variability inputs below.
 
-- **Biological SD** represents variation across different patients (used in independent mode).
-- **Inter-scanner SD** reflects intra-individual variation when the same patient is measured twice (used in paired mode).
+- **Biological SD** represents variation across different patients.
+- **Inter-scanner SD** represents variation when the same patient is measured twice.
 """
-)
+    )
 
 # Long-format references
 long_refs = {
@@ -58,9 +63,7 @@ long_refs = {
 }
 
 # SD data
-# NOTE: Biological SD is used in independent mode.
-# Inter-scanner SD values below should be **percent SD (%)** for paired mode.
-# TODO: Replace the placeholder inter_sd values with your provided percentage SD table.
+# NOTE: inter_sd values should be replaced with your percentage inter-scanner SD table.
 biomarker_data = {
     "Stenosis severity (%)": {
         "Standard": {"bio_sd": 11.6, "inter_sd": 2.4},
@@ -82,7 +85,6 @@ biomarker_data = {
 }
 
 # Inputs
-# Study design toggle (new)
 design = st.radio(
     "Study design",
     ["Independent groups (parallel)", "Paired (within-patient)"],
@@ -90,7 +92,10 @@ design = st.radio(
     horizontal=True,
 )
 
-resolution = st.selectbox("Select PCD-CT resolution", ["Standard (0.4 mm)", "Ultrahigh-resolution (0.2 mm)"])
+resolution = st.selectbox(
+    "Select PCD-CT resolution",
+    ["Standard (0.4 mm)", "Ultrahigh-resolution (0.2 mm)"]
+)
 res_key = "Standard" if resolution.startswith("Standard") else "UHR"
 
 valid_biomarkers = [k for k in biomarker_data if res_key in biomarker_data[k]]
@@ -106,11 +111,11 @@ with colA:
 with colB:
     power = st.number_input("Power", min_value=0.01, max_value=0.99, value=0.8, step=0.05)
 
-# Z values (shared)
+# Z values
 z_alpha = norm.ppf(1 - alpha / 2)
 z_beta = norm.ppf(power)
 
-# Delta limits for independent absolute Δ (existing behavior)
+# Delta limits for independent absolute Δ
 delta_limits = {
     "Stenosis severity (%)": (1.0, 100.0),
     "CT-FFR": (0.001, 1.0),
@@ -127,8 +132,7 @@ delta_limits = {
 
 # SD inputs
 if design.startswith("Paired"):
-    # In paired mode we only use inter-scanner variability (within-patient),
-    # so do not show Biological SD input.
+    # Hide biological SD entirely
     bio_sd = 0.0
     inter_label = "Inter-scanner SD (%)"
 else:
@@ -137,7 +141,7 @@ else:
 
 inter_sd = st.number_input(inter_label, value=float(bdata["inter_sd"]), format="%.4f")
 
-# Calculation + curve settings switch by design
+# Calculation + curve settings
 if design.startswith("Independent"):
     # Independent: total SD, absolute Δ
     total_sd = float(np.sqrt(bio_sd**2 + inter_sd**2))
@@ -146,7 +150,6 @@ if design.startswith("Independent"):
     delta_min, delta_max = delta_limits.get(biomarker, (0.001, 100.0))
 
     with colC:
-        # step size: CT-FFR needs smaller step
         step = 0.005 if biomarker == "CT-FFR" else 0.1
         fmt = "%.4f" if biomarker == "CT-FFR" else "%.2f"
         delta = st.number_input(
@@ -158,11 +161,11 @@ if design.startswith("Independent"):
             format=fmt,
         )
 
-    # Independent sample size (two-sample)
+    # Two-sample sample size
     n = 2 * (((z_alpha + z_beta) * total_sd / delta) ** 2)
     n_rounded = int(np.ceil(n))
 
-    # Curve: Δ absolute
+    # Curve
     delta_range = np.linspace(delta_min, delta_max, 1000)
     sample_sizes = 2 * (((z_alpha + z_beta) * total_sd / delta_range) ** 2)
     sample_sizes = np.clip(sample_sizes, 1, None)
@@ -174,12 +177,11 @@ if design.startswith("Independent"):
     ss_vals = sample_sizes[valid]
 
     x_title = "Expected difference (Δ)"
+    # IMPORTANT: no duplicate number in hover (no unified header)
     hover = "Δ: %{x:.4f}<br>Sample size: %{customdata:.0f}<extra></extra>"
 
 else:
     # Paired: inter-scanner SD (%) and Δ% input
-    # Using the paired design form: n = f(alpha, P) * sigma^2 * 2 / delta^2
-    # where f(alpha,P) = (z_alpha + z_beta)^2, sigma = inter_sd (%), delta = Δ% (%)
     with colC:
         delta_pct = st.number_input(
             "Δ% (Required proportionate change)",
@@ -206,7 +208,8 @@ else:
     ss_vals = sample_sizes[valid]
 
     x_title = "Required proportionate change (Δ%)"
-    hover = "Δ%: %{x:.2f}%<br>Sample size: %{customdata:.0f}<extra></extra>"
+    # IMPORTANT: no extra % after the number
+    hover = "Δ%: %{x:.2f}<br>Sample size: %{customdata:.0f}<extra></extra>"
 
 # Output
 st.markdown("---")
@@ -216,7 +219,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Single dynamic plot (same position, switches by design)
+# Plot
 fig = go.Figure()
 fig.add_trace(
     go.Scatter(
@@ -234,7 +237,8 @@ fig.add_trace(
 fig.update_layout(
     xaxis_title=x_title,
     yaxis_title="log₁₀(sample size)",
-    hovermode="x unified",
+    # IMPORTANT: this removes the separate "header" number in the tooltip
+    hovermode="closest",
     hoverlabel=dict(bgcolor="white", bordercolor="black", font_size=13),
     plot_bgcolor="white",
     margin=dict(l=40, r=40, t=20, b=40),
