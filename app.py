@@ -164,8 +164,8 @@ delta_pct = st.number_input("Δ (relative difference, %)", value=5.0)
 baseline_mean = abs(float(bdata["eid_mean"]))
 delta_abs = baseline_mean * (delta_pct / 100.0)
 
-    n = 2 * (((z_alpha + z_beta) * total_sd / delta_abs) ** 2)
-    n_req = int(np.ceil(n))
+n = 2 * (((z_alpha + z_beta) * total_sd / delta_abs) ** 2)
+n_req = int(np.ceil(n))
 
     x = np.linspace(0.1, 50.0, 600)
     delta_curve = (
