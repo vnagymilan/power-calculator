@@ -227,12 +227,6 @@ if design.startswith("Independent"):
     # X-axis label (shared plot code expects x_label)
     x_label = "Expected proportional difference (%)"
 
-    # Debug readout (optional but helpful for reviewer-facing transparency)
-    st.caption(
-        f"Using μ={mu:.3f}; bio SD={bio_sd:.2f}% (abs {bio_sd_abs:.3f}); "
-        f"inter-scanner SD={inter_sd:.2f}% (abs {inter_sd_abs:.3f})."
-    )
-
 # -----------------------------
 # Paired
 # -----------------------------
