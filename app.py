@@ -112,6 +112,31 @@ biomarker_data = {
 }
 
 # -----------------------------
+# Table 2 inter-scanner SD defaults (auto-populated)
+# -----------------------------
+# Values taken from Table 2 in "Power calculation tables.docx"
+INTER_SCANNER_SD_TABLE2 = {
+    "Standard": {
+        "Stenosis degree (%)": 2.37,
+        "CT-FFR": 19.86,
+    },
+    "UHR": {
+        "Stenosis degree (%)": 24.34,
+        "CT-FFR": 25.08,
+        "Segment stenosis score": 40.75,
+        "Segment involvement score": 28.40,
+        "EAT volume (cl)": 18.84,
+        "EAT attenuation (HU)": 6.64,
+        "PCAT attenuation (HU)": 10.30,
+        "Total plaque volume (mm³)": 18.32,
+        "Calcified plaque volume (mm³)": 51.10,
+        "Fibrotic plaque volume (mm³)": 19.51,
+        # your app uses this label for LAP:
+        "Low-attenuation plaque volume (mm³)": 220.01,
+    },
+}
+
+# -----------------------------
 # Inputs
 # -----------------------------
 design = st.radio(
@@ -150,7 +175,16 @@ if design.startswith("Paired"):
 else:
     bio_sd = st.number_input("Biological SD", value=float(bdata["bio_sd"]))
 
-inter_sd = st.number_input("Inter-scanner SD", value=float(bdata["inter_sd"]))
+inter_sd_default = INTER_SCANNER_SD_TABLE2.get(res_key, {}).get(
+    biomarker,
+    float(bdata["inter_sd"])
+)
+
+inter_sd = st.number_input(
+    "Inter-scanner SD",
+    value=float(inter_sd_default),
+    key=f"inter_sd__{res_key}__{biomarker}__{design}"
+)
 
 # -----------------------------
 # Independent groups
