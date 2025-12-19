@@ -156,23 +156,13 @@ inter_sd = st.number_input("Inter-scanner SD", value=float(bdata["inter_sd"]))
 # Independent groups
 # -----------------------------
 if design.startswith("Independent"):
-    effect_mode = st.radio(
-        "Effect size input",
-        ["Absolute Δ", "Proportionate Δ (%)"],
-        horizontal=True,
-    )
-
+   
     total_sd = np.sqrt(bio_sd**2 + inter_sd**2)
     st.markdown(f"**Total SD:** {total_sd:.3f}")
 
-    if effect_mode == "Absolute Δ":
-        delta = st.number_input("Δ (absolute difference)", value=1.0)
-        delta_abs = delta
-
-    else:
-        delta_pct = st.number_input("Δ (relative difference, %)", value=5.0)
-        baseline_mean = abs(float(bdata["eid_mean"]))  # ALWAYS EID-CT
-        delta_abs = baseline_mean * (delta_pct / 100.0)
+delta_pct = st.number_input("Δ (relative difference, %)", value=5.0)
+baseline_mean = abs(float(bdata["eid_mean"]))
+delta_abs = baseline_mean * (delta_pct / 100.0)
 
     n = 2 * (((z_alpha + z_beta) * total_sd / delta_abs) ** 2)
     n_req = int(np.ceil(n))
