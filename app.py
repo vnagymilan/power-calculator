@@ -181,7 +181,6 @@ x_label = "Expected difference (Δ)" if effect_mode == "Absolute Δ" else "Expec
 # -----------------------------
 # Paired
 # -----------------------------
-else:
     delta_pct = st.number_input("Δ (required relative change, %)", value=5.0)
     f = (z_alpha + z_beta) ** 2
     n = f * 2 * (inter_sd**2) / (delta_pct**2)
