@@ -216,8 +216,6 @@ if design.startswith("Independent"):
     n = 2 * total_var * f / (delta_abs**2)
     n_req = int(np.ceil(n))
 
-    st.metric("Required sample size (per group)", n_req)
-
    # Curve (x-axis in %)
     x = np.linspace(0.1, 50.0, 600)
     delta_curve_abs = mu * (x / 100.0)
@@ -251,7 +249,7 @@ else:
 # -----------------------------
 # Output
 # -----------------------------
-st.markdown("---")
+st.markdown("**Required sample size (per group)**")
 st.markdown(
     f"<div style='text-align:center;font-size:44px;font-weight:700;'>"
     f"{n_req} patients</div>",
