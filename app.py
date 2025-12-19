@@ -190,36 +190,37 @@ inter_sd = st.number_input(
 # Independent groups
 # -----------------------------
 if design.startswith("Independent"):
-   
+
     total_sd = np.sqrt(bio_sd**2 + inter_sd**2)
     st.markdown(f"**Total SD:** {total_sd:.3f}")
 
-delta_pct = st.number_input("Δ (relative difference, %)", value=5.0)
-baseline_mean = abs(float(bdata["eid_mean"]))
-delta_abs = baseline_mean * (delta_pct / 100.0)
+    delta_pct = st.number_input("Δ (relative difference, %)", value=5.0)
+    baseline_mean = abs(float(bdata["eid_mean"]))
+    delta_abs = baseline_mean * (delta_pct / 100.0)
 
-n = 2 * (((z_alpha + z_beta) * total_sd / delta_abs) ** 2)
-n_req = int(np.ceil(n))
+    n = 2 * (((z_alpha + z_beta) * total_sd / delta_abs) ** 2)
+    n_req = int(np.ceil(n))
 
-x = np.linspace(0.1, 50.0, 600)
-delta_curve = abs(bdata["eid_mean"]) * x / 100.0
+    x = np.linspace(0.1, 50.0, 600)
+    delta_curve = abs(bdata["eid_mean"]) * x / 100.0
 
-y = 2 * (((z_alpha + z_beta) * total_sd / delta_curve) ** 2)
-y = np.log10(np.clip(y, 1, None))
+    y = 2 * (((z_alpha + z_beta) * total_sd / delta_curve) ** 2)
+    y = np.log10(np.clip(y, 1, None))
 
-x_label = "Expected relative difference (%)"
+    x_label = "Expected relative difference (%)"
 
 # -----------------------------
 # Paired
 # -----------------------------
-delta_pct = st.number_input("Δ (required relative change, %)", value=5.0)
-f = (z_alpha + z_beta) ** 2
-n = f * 2 * (inter_sd**2) / (delta_pct**2)
-n_req = int(np.ceil(n))
+else:
+    delta_pct = st.number_input("Δ (required relative change, %)", value=5.0)
+    f = (z_alpha + z_beta) ** 2
+    n = f * 2 * (inter_sd**2) / (delta_pct**2)
+    n_req = int(np.ceil(n))
 
-x = np.linspace(1.0, 20.0, 600)
-y = np.log10(f * 2 * (inter_sd**2) / (x**2))
-x_label = "Required relative change (%)"
+    x = np.linspace(1.0, 20.0, 600)
+    y = np.log10(f * 2 * (inter_sd**2) / (x**2))
+    x_label = "Required relative change (%)"
 
 # -----------------------------
 # Output
