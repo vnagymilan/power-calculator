@@ -176,7 +176,7 @@ delta_curve = (
 y = 2 * (((z_alpha + z_beta) * total_sd / delta_curve) ** 2)
 y = np.log10(np.clip(y, 1, None))
 
-    x_label = "Expected difference (Δ)" if effect_mode == "Absolute Δ" else "Expected relative difference (%)"
+x_label = "Expected difference (Δ)" if effect_mode == "Absolute Δ" else "Expected relative difference (%)"
 
 # -----------------------------
 # Paired
