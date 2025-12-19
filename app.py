@@ -263,7 +263,8 @@ fig.update_xaxes(
 )
 fig.update_yaxes(showgrid=True)
 
-fig.update_yaxes(showgrid=True, rangemode="tozero")
+ymax = float(np.nanmax(y)) * 1.05
+fig.update_yaxes(showgrid=True, range=[1, ymax])
 
 st.plotly_chart(fig, use_container_width=True)
 
