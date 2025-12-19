@@ -218,7 +218,7 @@ else:
     n = f * 2 * (inter_sd**2) / (delta_pct**2)
     n_req = int(np.ceil(n))
 
-    x = np.linspace(1.0, 20.0, 600)
+    x = np.linspace(1.0, 50.0, 600)
     y = np.log10(f * 2 * (inter_sd**2) / (x**2))
     x_label = "Expected relative change (%)"
 
