@@ -249,7 +249,10 @@ else:
 # -----------------------------
 # Output
 # -----------------------------
-st.markdown("**Required sample size (per group)**")
+st.markdown(
+    "<div style='text-align: center; font-weight: 600;'>Required sample size (per group)</div>",
+    unsafe_allow_html=True
+)
 st.markdown(
     f"<div style='text-align:center;font-size:44px;font-weight:700;'>"
     f"{n_req} patients</div>",
