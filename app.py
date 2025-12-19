@@ -168,9 +168,9 @@ n = 2 * (((z_alpha + z_beta) * total_sd / delta_abs) ** 2)
 n_req = int(np.ceil(n))
 
 x = np.linspace(0.1, 50.0, 600)
-    delta_curve = (
-        x if effect_mode == "Absolute Δ"
-        else abs(bdata["eid_mean"]) * x / 100.0
+delta_curve = (
+    x if effect_mode == "Absolute Δ"
+    else abs(bdata["eid_mean"]) * x / 100.0
     )
 
     y = 2 * (((z_alpha + z_beta) * total_sd / delta_curve) ** 2)
