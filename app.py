@@ -236,14 +236,14 @@ if design.startswith("Independent"):
 # Paired
 # -----------------------------
 else:
-    delta_pct = st.number_input("Δ (Expected relative change, %)", value=5.0)
+    delta_pct = st.number_input("Δ (Expected proportionate change, %)", value=5.0)
     f = (z_alpha + z_beta) ** 2
     n = f * 2 * (inter_sd**2) / (delta_pct**2)
     n_req = int(np.ceil(n))
 
     x = np.linspace(1.0, 50.0, 600)
     y = np.log10(f * 2 * (inter_sd**2) / (x**2))
-    x_label = "Expected relative change (%)"
+    x_label = "Expected proportionate change (%)"
 
 # -----------------------------
 # Output
