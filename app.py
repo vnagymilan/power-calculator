@@ -263,7 +263,7 @@ fig.update_xaxes(
 )
 fig.update_yaxes(showgrid=True)
 
-fig.update_yaxes(range=[0, None])
+fig.update_yaxes(showgrid=True, rangemode="tozero")
 
 st.plotly_chart(fig, use_container_width=True)
 
