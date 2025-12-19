@@ -218,13 +218,16 @@ if design.startswith("Independent"):
 
     st.metric("Required sample size (per group)", n_req)
 
-    # Curve (x-axis in %)
-    x = np.linspace(0.1, 50.0, 600)
-    delta_curve_abs = mu * (x / 100.0)
-    y = 2 * total_var * f / (delta_curve_abs**2)
+   # Curve (x-axis in %)
+x = np.linspace(0.1, 50.0, 600)
+delta_curve_abs = mu * (x / 100.0)
+y = 2 * total_var * f / (delta_curve_abs**2)
 
-    # If you are plotting on log10 scale elsewhere, keep it consistent:
-    y_plot = np.log10(np.clip(y, 1, None))
+# Plot uses log10(sample size) on the y-axis
+y = np.log10(np.clip(y, 1, None))
+
+# X-axis label (shared plot code expects x_label)
+x_label = "Expected proportional difference (%)"
 
     # Debug readout (optional but helpful for reviewer-facing transparency)
     st.caption(
