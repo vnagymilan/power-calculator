@@ -75,39 +75,39 @@ references = {
 # -----------------------------
 biomarker_data = {
     "Stenosis severity (%)": {
-        "Standard": {"bio_sd": 11.6, "inter_sd": 2.4, "eid_mean": 46.2},
-        "UHR": {"bio_sd": 11.6, "inter_sd": 10.2, "eid_mean": 53.1},
+        "Standard": {"bio_sd": 22.22, "inter_sd": 2.37, "eid_mean": 46.2},
+        "UHR": {"bio_sd": 22.22, "inter_sd": 24.34, "eid_mean": 53.1},
     },
     "CT-FFR": {
-        "Standard": {"bio_sd": 0.08, "inter_sd": 0.09, "eid_mean": 0.81},
-        "UHR": {"bio_sd": 0.08, "inter_sd": 0.11, "eid_mean": 0.70},
+        "Standard": {"bio_sd": 18.31, "inter_sd": 19.86, "eid_mean": 0.81},
+        "UHR": {"bio_sd": 18.31, "inter_sd": 25.08, "eid_mean": 0.70},
     },
     "Segment stenosis score": {
-        "UHR": {"bio_sd": 5.93, "inter_sd": 3.18, "eid_mean": 7.8}
+        "UHR": {"bio_sd": 258.33, "inter_sd": 40.75, "eid_mean": 7.8}
     },
     "Segment involvement score": {
-        "UHR": {"bio_sd": 4.44, "inter_sd": 1.47, "eid_mean": 7.5}
+        "UHR": {"bio_sd": 166.67, "inter_sd": 28.40, "eid_mean": 7.5}
     },
     "EAT volume (cl)": {
-        "UHR": {"bio_sd": 5.67, "inter_sd": 2.27, "eid_mean": 15.1}
+        "UHR": {"bio_sd": 45.24, "inter_sd": 18.84, "eid_mean": 15.1}
     },
     "EAT attenuation (HU)": {
-        "UHR": {"bio_sd": 5.20, "inter_sd": 6.53, "eid_mean": -77.9}
+        "UHR": {"bio_sd": 6.50, "inter_sd": 6.64, "eid_mean": -77.9}
     },
     "PCAT attenuation (HU)": {
-        "UHR": {"bio_sd": 8.00, "inter_sd": 7.37, "eid_mean": -69.8}
+        "UHR": {"bio_sd": 13.35, "inter_sd": 10.30, "eid_mean": -69.8}
     },
     "Total plaque volume (mm³)": {
-        "UHR": {"bio_sd": 515.0, "inter_sd": 239.54, "eid_mean": 1137.0}
+        "UHR": {"bio_sd": 124.55, "inter_sd": 18.32, "eid_mean": 1137.0}
     },
     "Calcified plaque volume (mm³)": {
-        "UHR": {"bio_sd": 148.6, "inter_sd": 142.02, "eid_mean": 334.8}
+        "UHR": {"bio_sd": 160.48, "inter_sd": 51.10, "eid_mean": 334.8}
     },
     "Fibrotic plaque volume (mm³)": {
-        "UHR": {"bio_sd": 380.1, "inter_sd": 206.6, "eid_mean": 723.0}
+        "UHR": {"bio_sd": 118.45, "inter_sd": 19.51, "eid_mean": 723.0}
     },
     "Low-attenuation plaque volume (mm³)": {
-        "UHR": {"bio_sd": 11.9, "inter_sd": 84.59, "eid_mean": 82.4}
+        "UHR": {"bio_sd": 132.22, "inter_sd": 220.01, "eid_mean": 82.4}
     },
 }
 
