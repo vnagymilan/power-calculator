@@ -187,27 +187,50 @@ inter_sd = st.number_input(
 )
 
 # -----------------------------
-# Independent groups
+# Independent groups (parallel)
+# All SD inputs are percentages (CV-like): bio_sd_pct, inter_sd_pct
+# Δ input is percentage
 # -----------------------------
 if design.startswith("Independent"):
 
-    total_sd = np.sqrt(bio_sd**2 + inter_sd**2)
-    st.markdown(f"**Total SD:** {total_sd:.3f}")
+    f = (z_alpha + z_beta) ** 2
 
-    delta_pct = st.number_input("Δ (Expected relative difference, %)", value=5.0)
-    baseline_mean = abs(float(bdata["eid_mean"]))
-    delta_abs = baseline_mean * (delta_pct / 100.0)
+    # User input: expected proportional difference (%)
+    delta_pct = st.number_input("Δ (Expected proportional difference, %)", value=5.0, min_value=0.1)
 
-    n = 2 * (((z_alpha + z_beta) * total_sd / delta_abs) ** 2)
+    # Baseline mean magnitude used to convert % -> absolute units
+    # (use abs() so HU variables don’t break the scaling if mean is negative)
+    mu = abs(float(bdata["eid_mean"]))
+
+    # Convert SD% to absolute SDs
+    bio_sd_abs   = mu * (bio_sd / 100.0)
+    inter_sd_abs = mu * (inter_sd / 100.0)
+
+    # Total variance per arm
+    total_var = bio_sd_abs**2 + inter_sd_abs**2
+
+    # Convert Δ% to absolute detectable difference
+    delta_abs = mu * (delta_pct / 100.0)
+
+    # Sample size per group
+    n = 2 * total_var * f / (delta_abs**2)
     n_req = int(np.ceil(n))
 
+    st.metric("Required sample size (per group)", n_req)
+
+    # Curve (x-axis in %)
     x = np.linspace(0.1, 50.0, 600)
-    delta_curve = abs(bdata["eid_mean"]) * x / 100.0
+    delta_curve_abs = mu * (x / 100.0)
+    y = 2 * total_var * f / (delta_curve_abs**2)
 
-    y = 2 * (((z_alpha + z_beta) * total_sd / delta_curve) ** 2)
-    y = np.log10(np.clip(y, 1, None))
+    # If you are plotting on log10 scale elsewhere, keep it consistent:
+    y_plot = np.log10(np.clip(y, 1, None))
 
-    x_label = "Expected relative difference (%)"
+    # Debug readout (optional but helpful for reviewer-facing transparency)
+    st.caption(
+        f"Using μ={mu:.3f}; bio SD={bio_sd:.2f}% (abs {bio_sd_abs:.3f}); "
+        f"inter-scanner SD={inter_sd:.2f}% (abs {inter_sd_abs:.3f})."
+    )
 
 # -----------------------------
 # Paired
