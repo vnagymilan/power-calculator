@@ -181,7 +181,7 @@ inter_sd_default = INTER_SCANNER_SD_TABLE2.get(res_key, {}).get(
 )
 
 inter_sd = st.number_input(
-    "Inter-scanner SD",
+    "Inter-scanner SD*",
     value=float(inter_sd_default),
     key=f"inter_sd__{res_key}__{biomarker}__{design}"
 )
